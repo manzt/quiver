@@ -1,0 +1,20 @@
+{
+  "version": "3",
+  "packages": {
+    "specifiers": {
+      "npm:@uwdata/flechette@^1.1.0": "npm:@uwdata/flechette@1.1.0"
+    },
+    "npm": {
+      "@uwdata/flechette@1.1.0": {
+        "integrity": "sha512-UG25ytXRsElGDSIsvCuEUUkX/XImdKe7jnZF2Y5Q9uYYQH6WO60F7yLJ/sNRBJqHdn4A0QhTAOuOJevDZZcF8Q==",
+        "dependencies": {}
+      }
+    }
+  },
+  "remote": {},
+  "workspace": {
+    "dependencies": [
+      "npm:@uwdata/flechette@^1.1.0"
+    ]
+  }
+}

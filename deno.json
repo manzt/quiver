@@ -1,0 +1,13 @@
+{
+	"fmt": {
+		"useTabs": true
+	},
+	"lint": {
+		"rules": {
+			"exclude": ["prefer-const"]
+		}
+	},
+	"imports": {
+		"@uwdata/flechette": "npm:@uwdata/flechette@^1.1.0"
+	}
+}
