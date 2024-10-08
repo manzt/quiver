@@ -1,5 +1,5 @@
 {
-	"name": "@manzt/armguard",
+	"name": "@manzt/quiver",
 	"version": "0.0.0",
 	"exports": "./main.ts",
 	"license": "MIT",
