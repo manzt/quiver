@@ -1,7 +1,7 @@
 {
 	"name": "@manzt/quiver",
 	"version": "0.0.0",
-	"exports": "./main.ts",
+	"exports": "./src/mod.ts",
 	"license": "MIT",
 	"fmt": {
 		"useTabs": true

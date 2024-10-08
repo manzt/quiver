@@ -1,77 +1,15 @@
 export * from "@uwdata/flechette";
 import * as f from "@uwdata/flechette";
+import type { JsValue } from "./jsvalue.ts";
+import type { DataType, Field, Schema } from "./data-types.ts";
 
-type ValueArray<DataType extends f.DataType, T> = f.ValueArray<T>;
+type ValueArray<D extends DataType, T> = f.ValueArray<T>;
 
-type Column<DataType extends f.DataType, T> = f.Column<T>;
+type Column<D extends DataType, T> = f.Column<T>;
 
 type ResolveNullable<T, Nullable extends boolean> = Nullable extends true
 	? T | null
 	: T;
-
-/**
- * A TypeScript type alias called `Prettify`.
- * It takes a type as its argument and returns a new type that has the same properties as the original type,
- * but the properties are not intersected. This means that the new type is easier to read and understand.
- */
-type Prettify<T> =
-	& {
-		[K in keyof T]: T[K];
-	}
-	& {};
-
-type JsValue<
-	T extends f.DataType,
-	Options extends f.ExtractionOptions,
-> = T extends f.DictionaryType ? JsValue<T["dictionary"], Options>
-	: T extends f.NoneType ? null
-	: T extends f.NullType ? null
-	: T extends f.IntType
-		? Options["useBigInt"] extends true ? (number | bigint) : number
-	: T extends f.FloatType ? number
-	: T extends
-		| f.BinaryType
-		| f.FixedSizeBinaryType
-		| f.LargeBinaryType
-		| f.BinaryViewType ? Uint8Array
-	: T extends f.Utf8Type | f.LargeUtf8Type | f.Utf8ViewType ? string
-	: T extends f.BoolType ? boolean
-	: T extends f.DecimalType
-		? Options["useDecimalBigInt"] extends true ? bigint : number
-	: T extends f.DateType ? Options["useDate"] extends true ? Date : number
-	: T extends f.TimeType
-		? Options["useBigInt"] extends true ? (number | bigint) : number
-	: T extends f.TimestampType ? Options["useDate"] extends true ? Date : number
-	: T extends f.IntervalType ? Options["useDate"] extends true ? Date : number
-	: T extends
-		| f.ListType
-		| f.FixedSizeListType
-		| f.LargeListType
-		| f.ListViewType
-		| f.LargeListViewType ? Array<unknown>
-	: T extends f.StructType ? unknown
-	: T extends f.UnionType ? unknown
-	: T extends f.MapType ? Options["useMap"] extends true ? Map<string, unknown>
-		: Array<[string, unknown]>
-	: T extends f.DurationType
-		? Options["useBigInt"] extends true ? bigint : number
-	: T extends f.RunEndEncodedType ? unknown
-	: never;
-
-type Field<Name extends string = string> = {
-	readonly name: Name;
-	readonly type: f.DataType;
-	readonly nullable: boolean;
-};
-
-type Schema<Fields extends Array<Field>> = {
-	version?: f.Version_;
-	endianness?: f.Endianness_;
-	fields: {
-		[K in keyof Fields]: Prettify<Fields[K] & { metadata: f.Metadata }>;
-	};
-	metadata?: f.Metadata | null;
-};
 
 interface Table<
 	Fields extends Array<Field>,
@@ -128,7 +66,10 @@ interface Table<
 		as?: string[],
 	): Table<
 		{
-			[K in keyof Names]: Extract<Fields[number], Field<Names[K]>>;
+			[K in keyof Names]: Extract<
+				Fields[number],
+				Field<Names[K]>
+			>;
 		},
 		ExtractionOptions
 	>;
@@ -147,7 +88,10 @@ interface Table<
 		{
 			[K in Fields[number]["name"]]: ResolveNullable<
 				JsValue<
-					Extract<Fields[number], Field<K>>["type"],
+					Extract<
+						Fields[number],
+						Field<K>
+					>["type"],
 					ExtractionOptions
 				>,
 				Extract<Fields[number], Field<K>>["nullable"]
@@ -181,7 +125,10 @@ interface Table<
 		{
 			[K in Fields[number]["name"]]: ResolveNullable<
 				JsValue<
-					Extract<Fields[number], Field<K>>["type"],
+					Extract<
+						Fields[number],
+						Field<K>
+					>["type"],
 					ExtractionOptions
 				>,
 				Extract<Fields[number], Field<K>>["nullable"]
@@ -196,7 +143,7 @@ type UnwrapFieldType<T> = T extends Array<unknown> ? T[number] : T;
 
 export function table<
 	const DataTypes extends Array<
-		readonly [string, f.DataType | Array<f.DataType>]
+		readonly [string, DataType | Array<DataType>]
 	>,
 	const ExtractionOptions extends f.ExtractionOptions = {},
 >(types: DataTypes, options?: ExtractionOptions): {
@@ -213,7 +160,7 @@ export function table<
 };
 
 export function table<
-	const DataTypes extends Record<string, f.DataType | Array<f.DataType>>,
+	const DataTypes extends Record<string, DataType | Array<DataType>>,
 	const ExtractionOptions extends f.ExtractionOptions = {},
 >(types: DataTypes, options?: ExtractionOptions): {
 	parseIPC(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>): Table<
@@ -256,6 +203,8 @@ export function table(
 }
 
 export type infer<T> = T extends {
-	parseIPC: (ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>) => infer U;
+	parseIPC: (
+		ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>,
+	) => infer U;
 } ? U
 	: never;

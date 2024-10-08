@@ -16,41 +16,41 @@ import * as q from "@manzt/quiver";
 type MyTable = q.infer<typeof myTableSchema>;
 
 let myTableSchema = q.table({
-  num: q.union([q.int(), q.float()]),
-  str: q.string(),
-  bool: q.bool().nonNullable(),
-  date: q.union([q.dateDay(), q.dateMillisecond()]),
+	num: q.union([q.int(), q.float()]),
+	str: q.string(),
+	bool: q.bool().nonNullable(),
+	date: q.union([q.dateDay(), q.dateMillisecond()]),
 }, {
-  useDate: true,
-  useBigInt: false,
+	useDate: true,
+	useBigInt: false,
 });
 
 function processTable(table: MyTable) {
-  // strongly typed!
+	// strongly typed!
 
-  let arr = table.toArray();
-  // Array<{num: number|null, str: string|null, bool: boolean, date: Date|null}>
+	let arr = table.toArray();
+	// Array<{num: number|null, str: string|null, bool: boolean, date: Date|null}>
 
-  for (let row of table) {
-    row // {num: number|null, str: string|null, bool: boolean, date: Date|null}
-  }
+	for (let row of table) {
+		row; // {num: number|null, str: string|null, bool: boolean, date: Date|null}
+	}
 
-  let cols = table.toColumns();
-  // {
-  //   num: Column<IntType | FloatType, number>,
-  //   str: Column<StringType, string>,
-  //   bool: Column<BoolType, boolean>,
-  //   date: Column<DateType, Date>
-  // }
+	let cols = table.toColumns();
+	// {
+	//   num: Column<IntType | FloatType, number>,
+	//   str: Column<StringType, string>,
+	//   bool: Column<BoolType, boolean>,
+	//   date: Column<DateType, Date>
+	// }
 
-  let subTable = table.select(["num", "str"]);
-  // Table<[
-  //  { name: "num", type: IntType | FloatType },
-  //  { name: "str", type: StringType }
-  // ], {
-  //   useDate: true,
-  //   useBigInt: false
-  // }>
+	let subTable = table.select(["num", "str"]);
+	// Table<[
+	//  { name: "num", type: IntType | FloatType },
+	//  { name: "str", type: StringType }
+	// ], {
+	//   useDate: true,
+	//   useBigInt: false
+	// }>
 }
 
 // fetch Arrow data

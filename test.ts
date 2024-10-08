@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-unused-vars
 import * as a from "./main.ts";
 
-type MyTable = a.Infer<typeof ts>;
+type MyTable = a.infer<typeof ts>;
 
 let tableSchema = a.table({
 	number: [a.int(), a.float()],
@@ -11,6 +11,7 @@ let tableSchema = a.table({
 	dict: a.int(),
 }, {
 	useDate: true,
+	useBigInt: true,
 });
 
 let ts = a.table([
@@ -21,7 +22,6 @@ let ts = a.table([
 	["dict", a.int()],
 ]);
 
-let t2 = ts.parseIPC(new Uint8Array());
 let table = tableSchema.parseIPC(new Uint8Array());
 
 let _names = table.names;
@@ -36,8 +36,6 @@ let _cols = table.toColumns();
 let cols = table.toColumns();
 let arr = table.toArray();
 for (let { number, string } of table) {}
-let subset = table.select(["string"]);
 let s2 = table.select(["string", "number"]);
 let t5 = s2.selectAt([0, 1]);
-
-let f = subset.schema.fields[0];
+let f = s2.schema.fields[1];
