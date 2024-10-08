@@ -5,6 +5,21 @@ type ValueArray<DataType extends f.DataType, T> = f.ValueArray<T>;
 
 type Column<DataType extends f.DataType, T> = f.Column<T>;
 
+type ResolveNullable<T, Nullable extends boolean> = Nullable extends true
+  ? T | null
+  : T;
+
+/**
+ * A TypeScript type alias called `Prettify`.
+ * It takes a type as its argument and returns a new type that has the same properties as the original type,
+ * but the properties are not intersected. This means that the new type is easier to read and understand.
+ */
+type Prettify<T> =
+  & {
+    [K in keyof T]: T[K];
+  }
+  & {};
+
 type JsValue<
   T extends f.DataType,
   Options extends f.ExtractionOptions,
@@ -44,13 +59,23 @@ type JsValue<
 type Field<Name extends string = string> = {
   readonly name: Name;
   readonly type: f.DataType;
+  readonly nullable: boolean;
+};
+
+type Schema<Fields extends Array<Field>> = {
+  version?: f.Version_;
+  endianness?: f.Endianness_;
+  fields: {
+    [K in keyof Fields]: Prettify<Fields[K] & { metadata: f.Metadata }>;
+  };
+  metadata?: f.Metadata | null;
 };
 
 interface Table<
   Fields extends Array<Field>,
   ExtractionOptions extends f.ExtractionOptions,
 > {
-  readonly schema: f.Schema;
+  readonly schema: Schema<Fields>;
 
   readonly names: {
     [K in keyof Fields]: Fields[K]["name"];
@@ -118,43 +143,47 @@ interface Table<
 
   toArray(): Array<
     {
-      [K in Fields[number]["name"]]:
-        | JsValue<
+      [K in Fields[number]["name"]]: ResolveNullable<
+        JsValue<
           Extract<Fields[number], Field<K>>["type"],
           ExtractionOptions
-        >
-        | null;
+        >,
+        Extract<Fields[number], Field<K>>["nullable"]
+      >;
     }
   >;
 
   at(index: number): {
-    [K in Fields[number]["name"]]:
-      | JsValue<
+    [K in Fields[number]["name"]]: ResolveNullable<
+      JsValue<
         Extract<Fields[number], Field<K>>["type"],
         ExtractionOptions
-      >
-      | null;
+      >,
+      Extract<Fields[number], Field<K>>["nullable"]
+    >;
   };
 
   get(index: number): {
-    [K in Fields[number]["name"]]:
-      | JsValue<
+    [K in Fields[number]["name"]]: ResolveNullable<
+      JsValue<
         Extract<Fields[number], Field<K>>["type"],
         ExtractionOptions
-      >
-      | null;
+      >,
+      Extract<Fields[number], Field<K>>["nullable"]
+    >;
   };
 
   get [Symbol.toStringTag](): string;
 
   [Symbol.iterator](): Generator<
     {
-      [K in Fields[number]["name"]]:
-        | JsValue<
+      [K in Fields[number]["name"]]: ResolveNullable<
+        JsValue<
           Extract<Fields[number], Field<K>>["type"],
           ExtractionOptions
-        >
-        | null;
+        >,
+        Extract<Fields[number], Field<K>>["nullable"]
+      >;
     },
     unknown,
     undefined
@@ -164,27 +193,67 @@ interface Table<
 type UnwrapFieldType<T> = T extends Array<unknown> ? T[number] : T;
 
 export function table<
+  const DataTypes extends Array<
+    readonly [string, f.DataType | Array<f.DataType>]
+  >,
+  const ExtractionOptions extends f.ExtractionOptions = {},
+>(types: DataTypes, options?: ExtractionOptions): {
+  parseIPC(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>): Table<
+    {
+      [K in keyof DataTypes]: {
+        name: DataTypes[K][0];
+        type: UnwrapFieldType<DataTypes[K][1]>;
+        nullable: false;
+      };
+    },
+    ExtractionOptions
+  >;
+};
+
+export function table<
   const DataTypes extends Record<string, f.DataType | Array<f.DataType>>,
-  const ExtractionOptions extends f.ExtractionOptions,
->(types: DataTypes, options: ExtractionOptions) {
+  const ExtractionOptions extends f.ExtractionOptions = {},
+>(types: DataTypes, options?: ExtractionOptions): {
+  parseIPC(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>): Table<
+    Array<
+      {
+        [K in keyof DataTypes]: {
+          name: K & string;
+          type: UnwrapFieldType<DataTypes[K]>;
+          nullable: false;
+        };
+      }[keyof DataTypes]
+    >,
+    ExtractionOptions
+  >;
+};
+
+export function table(
+  types:
+    | Array<[name: string, type: f.DataType | Array<f.DataType>]>
+    | Record<string, f.DataType | Array<f.DataType>>,
+  options: f.ExtractionOptions = {},
+) {
   return {
-    parse(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>): Table<
-      Array<
-        {
-          [K in keyof DataTypes]: {
-            name: K & string;
-            type: UnwrapFieldType<DataTypes[K]>;
-          };
-        }[keyof DataTypes]
-      >,
-      ExtractionOptions
-    > {
-      return f.tableFromIPC(ipc, options) as any;
+    parseIPC(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>) {
+      let table = f.tableFromIPC(ipc, options);
+      if (Array.isArray(types)) {
+        // assert that the table has the same number of columns as the types
+        //
+        // If the table isn't in the right order, we can just select the columns in
+        // order if it's all correct.
+        //
+        // e.g., if it passes column assertions
+        // table = table.select(types.map(([name]) => name));
+      } else {
+        // assert that the table has the same columns as the types
+      }
+      return table as any;
     },
   };
 }
 
 export type Infer<T> = T extends {
-  parse: (ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>) => infer U;
+  parseIPC: (ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>) => infer U;
 } ? U
   : never;

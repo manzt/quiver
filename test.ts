@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-unused-vars
 import * as a from "./main.ts";
 
-type MyTable = a.Infer<typeof tableSchema>;
+type MyTable = a.Infer<typeof ts>;
 
 let tableSchema = a.table({
   number: [a.int(), a.float()],
@@ -13,7 +13,18 @@ let tableSchema = a.table({
   useDate: true,
 });
 
-let table = tableSchema.parse(new Uint8Array());
+// IDEA: Add overload for table function to accept a tuple of [name, type] pairs
+//
+let ts = a.table([
+  ["number", [a.int(), a.float()]],
+  ["string", a.utf8()],
+  ["boolean", a.bool()],
+  ["date", [a.dateDay(), a.dateMillisecond()]],
+  ["dict", a.int()],
+]);
+
+let t2 = ts.parseIPC(new Uint8Array());
+let table = tableSchema.parseIPC(new Uint8Array());
 
 let _names = table.names;
 let _values = table.children;
@@ -29,13 +40,6 @@ let arr = table.toArray();
 for (let { number, string } of table) {}
 let subset = table.select(["string"]);
 let s2 = table.select(["string", "number"]);
-let t2 = s2.selectAt([0, 1]);
+let t5 = s2.selectAt([0, 1]);
 
-// IDEA: Add overload for table function to accept a tuple of [name, type] pairs
-// let ts = a.table([
-//   ["number", [a.int(), a.float()]],
-//   ["string", a.utf8()],
-//   ["boolean", a.bool()],
-//   ["date", [a.dateDay(), a.dateMillisecond()]],
-//   ["dict", a.int()],
-// ]);
+let f = subset.schema.fields[0];
