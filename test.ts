@@ -10,10 +10,11 @@ let tableSchema = a.table({
   date: [a.dateDay(), a.dateMillisecond()],
   dict: a.int(),
 }, {
-    useDate: true,
+  useDate: true,
 });
 
 let table = tableSchema.parse(new Uint8Array());
+
 let _names = table.names;
 let _values = table.children;
 let _col = [table.getChildAt(0), table.getChildAt(1)] as const;

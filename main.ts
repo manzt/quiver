@@ -40,9 +40,12 @@ type JsValue<
   : T extends f.RunEndEncodedType ? unknown
   : never;
 
-type Field = readonly [name: string, dataType: f.DataType, jsType: unknown];
+type Field = readonly [name: string, dataType: f.DataType];
 
-interface Table<Fields extends Array<Field>> {
+interface Table<
+  Fields extends Array<Field>,
+  ExtractionOptions extends f.ExtractionOptions,
+> {
   readonly schema: f.Schema;
 
   readonly names: {
@@ -50,7 +53,10 @@ interface Table<Fields extends Array<Field>> {
   };
 
   readonly children: {
-    [K in keyof Fields]: Column<Fields[K][1], Fields[K][2]>;
+    [K in keyof Fields]: Column<
+      Fields[K][1],
+      JsValue<Fields[K][1], ExtractionOptions>
+    >;
   };
 
   readonly factory: f.StructFactory;
@@ -61,13 +67,16 @@ interface Table<Fields extends Array<Field>> {
 
   getChildAt<Index extends number>(
     index: Index,
-  ): Column<Fields[Index][1], Fields[Index][2]>;
+  ): Column<Fields[Index][1], JsValue<Fields[Index][1], ExtractionOptions>>;
 
   getChild<Name extends Fields[number][0]>(
     name: Name,
   ): Column<
-    Extract<Fields[number], readonly [Name, unknown, unknown]>[1],
-    Extract<Fields[number], readonly [Name, unknown, unknown]>[2]
+    Extract<Fields[number], readonly [Name, unknown]>[1],
+    JsValue<
+      Extract<Fields[number], readonly [Name, unknown]>[1],
+      ExtractionOptions
+    >
   >;
 
   selectAt<const Indices extends number[]>(
@@ -76,7 +85,8 @@ interface Table<Fields extends Array<Field>> {
   ): Table<
     {
       [K in keyof Indices]: Fields[Indices[K]];
-    }
+    },
+    ExtractionOptions
   >;
 
   select<const Names extends Array<Fields[number][0]>>(
@@ -86,35 +96,48 @@ interface Table<Fields extends Array<Field>> {
     {
       [K in keyof Names]: Extract<
         Fields[number],
-        readonly [Names[K], unknown, unknown]
+        readonly [Names[K], unknown]
       >;
-    }
+    },
+    ExtractionOptions
   >;
 
   toColumns(): {
     [K in Fields[number][0]]: ValueArray<
-      Extract<Fields[number], readonly [K, unknown, unknown]>[1],
-      Extract<Fields[number], readonly [K, unknown, unknown]>[2]
+      Extract<Fields[number], readonly [K, unknown]>[1],
+      JsValue<
+        Extract<Fields[number], readonly [K, unknown]>[1],
+        ExtractionOptions
+      >
     >;
   };
 
   toArray(): Array<
     {
       [K in Fields[number][0]]:
-        | Extract<Fields[number], readonly [K, unknown, unknown]>[2]
+        | JsValue<
+          Extract<Fields[number], readonly [K, unknown]>[1],
+          ExtractionOptions
+        >
         | null;
     }
   >;
 
   at(index: number): {
     [K in Fields[number][0]]:
-      | Extract<Fields[number], readonly [K, unknown, unknown]>[2]
+      | JsValue<
+        Extract<Fields[number], readonly [K, unknown]>[1],
+        ExtractionOptions
+      >
       | null;
   };
 
   get(index: number): {
     [K in Fields[number][0]]:
-      | Extract<Fields[number], readonly [K, unknown, unknown]>[2]
+      | JsValue<
+        Extract<Fields[number], readonly [K, unknown]>[1],
+        ExtractionOptions
+      >
       | null;
   };
 
@@ -123,7 +146,10 @@ interface Table<Fields extends Array<Field>> {
   [Symbol.iterator](): Generator<
     {
       [K in Fields[number][0]]:
-        | Extract<Fields[number], readonly [K, unknown, unknown]>[2]
+        | JsValue<
+          Extract<Fields[number], readonly [K, unknown]>[1],
+          ExtractionOptions
+        >
         | null;
     },
     unknown,
@@ -134,9 +160,9 @@ interface Table<Fields extends Array<Field>> {
 type UnwrapFieldType<T> = T extends Array<unknown> ? T[number] : T;
 
 export function table<
-  const Options extends f.ExtractionOptions,
   const DataTypes extends Record<string, f.DataType | Array<f.DataType>>,
->(types: DataTypes, options: Options) {
+  const ExtractionOptions extends f.ExtractionOptions,
+>(types: DataTypes, options: ExtractionOptions) {
   return {
     parse(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>): Table<
       Array<
@@ -144,10 +170,10 @@ export function table<
           [K in keyof DataTypes]: [
             K & string,
             UnwrapFieldType<DataTypes[K]>,
-            JsValue<UnwrapFieldType<DataTypes[K]>, Options>,
           ];
         }[keyof DataTypes]
-      >
+      >,
+      ExtractionOptions
     > {
       return f.tableFromIPC(ipc, options) as any;
     },
