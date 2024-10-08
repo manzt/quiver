@@ -1,7 +1,7 @@
 {
 	"name": "@manzt/armguard",
 	"version": "0.0.0",
-	"entry": "./main.ts",
+	"exports": "./main.ts",
 	"license": "MIT",
 	"fmt": {
 		"useTabs": true
