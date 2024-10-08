@@ -2,6 +2,7 @@ export * from "@uwdata/flechette";
 import * as f from "@uwdata/flechette";
 
 type ValueArray<DataType extends f.DataType, T> = f.ValueArray<T>;
+
 type Column<DataType extends f.DataType, T> = f.Column<T>;
 
 type JsValue<
@@ -40,7 +41,10 @@ type JsValue<
   : T extends f.RunEndEncodedType ? unknown
   : never;
 
-type Field = readonly [name: string, dataType: f.DataType];
+type Field<Name extends string = string> = readonly [
+  name: Name,
+  dataType: f.DataType,
+];
 
 interface Table<
   Fields extends Array<Field>,
@@ -72,9 +76,9 @@ interface Table<
   getChild<Name extends Fields[number][0]>(
     name: Name,
   ): Column<
-    Extract<Fields[number], readonly [Name, unknown]>[1],
+    Extract<Fields[number], Field<Name>>[1],
     JsValue<
-      Extract<Fields[number], readonly [Name, unknown]>[1],
+      Extract<Fields[number], Field<Name>>[1],
       ExtractionOptions
     >
   >;
@@ -94,19 +98,16 @@ interface Table<
     as?: string[],
   ): Table<
     {
-      [K in keyof Names]: Extract<
-        Fields[number],
-        readonly [Names[K], unknown]
-      >;
+      [K in keyof Names]: Extract<Fields[number], Field<Names[K]>>;
     },
     ExtractionOptions
   >;
 
   toColumns(): {
     [K in Fields[number][0]]: ValueArray<
-      Extract<Fields[number], readonly [K, unknown]>[1],
+      Extract<Fields[number], Field<K>>[1],
       JsValue<
-        Extract<Fields[number], readonly [K, unknown]>[1],
+        Extract<Fields[number], Field<K>>[1],
         ExtractionOptions
       >
     >;
@@ -116,7 +117,7 @@ interface Table<
     {
       [K in Fields[number][0]]:
         | JsValue<
-          Extract<Fields[number], readonly [K, unknown]>[1],
+          Extract<Fields[number], Field<K>>[1],
           ExtractionOptions
         >
         | null;
@@ -126,7 +127,7 @@ interface Table<
   at(index: number): {
     [K in Fields[number][0]]:
       | JsValue<
-        Extract<Fields[number], readonly [K, unknown]>[1],
+        Extract<Fields[number], Field<K>>[1],
         ExtractionOptions
       >
       | null;
@@ -135,7 +136,7 @@ interface Table<
   get(index: number): {
     [K in Fields[number][0]]:
       | JsValue<
-        Extract<Fields[number], readonly [K, unknown]>[1],
+        Extract<Fields[number], Field<K>>[1],
         ExtractionOptions
       >
       | null;
