@@ -1,14 +1,13 @@
 // deno-lint-ignore-file no-unused-vars
-import * as a from "./main.ts";
+import * as a from "./src/mod.ts";
 
 type MyTable = a.infer<typeof ts>;
 
 let tableSchema = a.table({
 	number: [a.int(), a.float()],
-	string: a.utf8(),
+	string: a.int(),
 	boolean: a.bool(),
 	date: [a.dateDay(), a.dateMillisecond()],
-	dict: a.int(),
 }, {
 	useDate: true,
 	useBigInt: true,
@@ -23,6 +22,8 @@ let ts = a.table([
 ]);
 
 let table = tableSchema.parseIPC(new Uint8Array());
+
+let t = table.getChild("number");
 
 let _names = table.names;
 let _values = table.children;
@@ -39,3 +40,7 @@ for (let { number, string } of table) {}
 let s2 = table.select(["string", "number"]);
 let t5 = s2.selectAt([0, 1]);
 let f = s2.schema.fields[1];
+
+for (let row of table) {
+	row;
+}

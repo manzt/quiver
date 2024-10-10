@@ -65,9 +65,7 @@ df = pl.DataFrame({
     "days_to_birthday": days_to_birthday,
 })
 
-
 table = df.to_arrow()
-
 print(table.schema)
 
 sink = io.BytesIO()
@@ -76,4 +74,3 @@ data = sink.getbuffer()
 
 with open("sample4.feather", "wb") as f:
     f.write(data)
-
