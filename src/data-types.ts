@@ -6,6 +6,7 @@ type Prettify<T> =
 	& {
 		[K in keyof T]: T[K];
 	}
+	// deno-lint-ignore ban-types
 	& {};
 
 // Base interface for all data types
@@ -123,9 +124,8 @@ type DecimalBitWidth = 128 | 256;
 
 /** Fixed decimal number data type. */
 export interface DecimalType<
-	BitWidth extends DecimalBitWidth = DecimalBitWidth
->
-	extends BaseDataType {
+	BitWidth extends DecimalBitWidth = DecimalBitWidth,
+> extends BaseDataType {
 	typeId: 7;
 	precision: number;
 	scale: number;

@@ -182,7 +182,7 @@ export function table<
 	const DataTypes extends Array<
 		readonly [string, DataType | Array<DataType>]
 	>,
-	const ExtractionOptions extends f.ExtractionOptions = {},
+	const ExtractionOptions extends f.ExtractionOptions = Record<string, unknown>,
 >(types: DataTypes, options?: ExtractionOptions): {
 	parseIPC(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>): Table<
 		{
@@ -198,7 +198,7 @@ export function table<
 
 export function table<
 	const DataTypes extends Record<string, DataType | Array<DataType>>,
-	const ExtractionOptions extends f.ExtractionOptions = {},
+	const ExtractionOptions extends f.ExtractionOptions = Record<string, unknown>,
 >(types: DataTypes, options?: ExtractionOptions): {
 	parseIPC(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>): Table<
 		Array<
@@ -234,6 +234,7 @@ export function table(
 			} else {
 				// assert that the table has the same columns as the types
 			}
+			// deno-lint-ignore no-explicit-any
 			return table as any;
 		},
 	};

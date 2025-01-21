@@ -1,20 +1,16 @@
 {
-  "version": "3",
-  "packages": {
-    "specifiers": {
-      "npm:@uwdata/flechette@^1.1.0": "npm:@uwdata/flechette@1.1.0"
-    },
-    "npm": {
-      "@uwdata/flechette@1.1.0": {
-        "integrity": "sha512-UG25ytXRsElGDSIsvCuEUUkX/XImdKe7jnZF2Y5Q9uYYQH6WO60F7yLJ/sNRBJqHdn4A0QhTAOuOJevDZZcF8Q==",
-        "dependencies": {}
-      }
+  "version": "4",
+  "specifiers": {
+    "npm:@uwdata/flechette@^1.1.2": "1.1.2"
+  },
+  "npm": {
+    "@uwdata/flechette@1.1.2": {
+      "integrity": "sha512-hhtAgXlJbibLIHHIyFJ2fcPQ/hAK43HtEirRgrb/v2xEQv4It/KcUOyMklaVPUv2Z7+agKjSWLAXGyAQglRPvQ=="
     }
   },
-  "remote": {},
   "workspace": {
     "dependencies": [
-      "npm:@uwdata/flechette@^1.1.0"
+      "npm:@uwdata/flechette@^1.1.2"
     ]
   }
 }

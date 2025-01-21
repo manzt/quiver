@@ -4,6 +4,9 @@
 #     "polars",
 #     "pyarrow",
 # ]
+#
+# [tool.uv]
+# exclude-newer = "2024-12-16T13:25:46.57553-05:00"
 # ///
 import io
 import polars as pl
@@ -49,21 +52,23 @@ salaries = [
 # Generate durations (days until next birthday)
 days_to_birthday = [timedelta(days=np.random.randint(1, 365)) for _ in range(num_rows)]
 
-df = pl.DataFrame({
-    "id": ids,
-    "name": names,
-    "age": ages,
-    "height": heights,
-    "is_student": is_student,
-    "date": dates,
-    "datetime": datetimes,
-    "time": times,
-    "address": addresses,
-    "hobbies": hobbies,
-    "tuples": tuples,
-    "salary": salaries,
-    "days_to_birthday": days_to_birthday,
-})
+df = pl.DataFrame(
+    {
+        "id": ids,
+        "name": names,
+        "age": ages,
+        "height": heights,
+        "is_student": is_student,
+        "date": dates,
+        "datetime": datetimes,
+        "time": times,
+        "address": addresses,
+        "hobbies": hobbies,
+        "tuples": tuples,
+        "salary": salaries,
+        "days_to_birthday": days_to_birthday,
+    }
+)
 
 table = df.to_arrow()
 print(table.schema)

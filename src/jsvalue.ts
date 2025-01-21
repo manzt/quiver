@@ -7,12 +7,12 @@ type ResolveBitWidth<
 > = BitWith extends 64 ? UseBigInt extends undefined | false ? number : bigint
 	: number;
 
-type ResolveExtractionOption<True, False, Flag extends boolean | undefined> =
-	Flag extends true ? True
-		: Flag extends false ? False
-		: Flag extends undefined ? False
-		: Flag extends boolean ? True | False
-		: False;
+type Switch<True, False, Flag extends boolean | undefined> = Flag extends true
+	? True
+	: Flag extends false ? False
+	: Flag extends undefined ? False
+	: Flag extends boolean ? True | False
+	: False;
 
 export type JsValue<
 	T extends d.DataType,
@@ -31,14 +31,14 @@ export type JsValue<
 		| d.BinaryViewType ? Uint8Array
 	: T extends d.Utf8Type | d.LargeUtf8Type | d.Utf8ViewType ? string
 	: T extends d.BoolType ? boolean
-	: T extends d.DecimalType ? ResolveExtractionOption<
+	: T extends d.DecimalType ? Switch<
 			bigint,
 			number,
 			Options extends { useDecimalBigInt: infer UseDecimalBigInt }
 				? UseDecimalBigInt
 				: false
 		>
-	: T extends d.DateType ? ResolveExtractionOption<
+	: T extends d.DateType ? Switch<
 			Date,
 			number,
 			Options extends { useDate: infer UseDate } ? UseDate : false
@@ -47,12 +47,12 @@ export type JsValue<
 			BitWidth,
 			Options extends { useBigInt: infer UseBigInt } ? UseBigInt : false
 		>
-	: T extends d.TimestampType ? ResolveExtractionOption<
+	: T extends d.TimestampType ? Switch<
 			Date,
 			number,
 			Options extends { useDate: infer UseDate } ? UseDate : false
 		>
-	: T extends d.IntervalType ? ResolveExtractionOption<
+	: T extends d.IntervalType ? Switch<
 			Date,
 			number,
 			Options extends { useDate: infer UseDate } ? UseDate : false
@@ -67,12 +67,12 @@ export type JsValue<
 		? Array<JsValue<Child["type"], Options>>
 	: T extends d.StructType ? unknown
 	: T extends d.UnionType ? unknown
-	: T extends d.MapType ? ResolveExtractionOption<
+	: T extends d.MapType ? Switch<
 			Map<string, unknown>,
 			Array<[string, unknown]>,
 			Options extends { useMap: infer UseMap } ? UseMap : false
 		>
-	: T extends d.DurationType ? ResolveExtractionOption<
+	: T extends d.DurationType ? Switch<
 			bigint,
 			number,
 			Options extends { useBigInt: infer UseBigInt } ? UseBigInt : false
@@ -126,6 +126,11 @@ export type JsValue<
 // 	{ useBigInt: true }
 // >;
 
+// type TestInt = ValueArray<d.IntType<8 | 32 | 64>, { useBigInt: true }>;
+// type TestInt2 = ValueArray<d.IntType<64, boolean>, { useBigInt: true }>;
+// type TestFloat = ValueArray<d.FloatType<1 | 2>, { useBigInt: true }>;
+// type TestFloat2 = ValueArray<d.FloatType<0 | 1 | 2>, { useBigInt: true }>;
+
 type ResolveIntValueArray<
 	BitWith extends f.IntBitWidth,
 	Signed extends boolean,
@@ -143,11 +148,6 @@ type ResolveFloatPrecisionValueArray<
 	: Precision extends typeof f.Precision.SINGLE ? Float32Array
 	: Float64Array;
 
-type TestInt = ValueArray<d.IntType<8 | 32 | 64>, { useBigInt: true }>;
-type TestInt2 = ValueArray<d.IntType<64, boolean>, { useBigInt: true }>;
-
-type TestFloat = ValueArray<d.FloatType<1 | 2>, { useBigInt: true }>;
-type TestFloat2 = ValueArray<d.FloatType<0 | 1 | 2>, { useBigInt: true }>;
 
 export type ValueArray<
 	T extends d.DataType,
@@ -168,14 +168,14 @@ export type ValueArray<
 		| d.BinaryViewType ? Array<Uint8Array>
 	: T extends d.Utf8Type | d.LargeUtf8Type | d.Utf8ViewType ? Array<string>
 	: T extends d.BoolType ? Array<boolean>
-	: T extends d.DecimalType ? ResolveExtractionOption<
+	: T extends d.DecimalType ? Switch<
 			Array<bigint>,
 			Float64Array,
 			Options extends { useDecimalBigInt: infer UseDecimalBigInt }
 				? UseDecimalBigInt
 				: false
 		>
-	: T extends d.DateType ? ResolveExtractionOption<
+	: T extends d.DateType ? Switch<
 			Array<Date>,
 			Float64Array,
 			Options extends { useDate: infer UseDate } ? UseDate : false
@@ -184,12 +184,12 @@ export type ValueArray<
 			BitWidth,
 			Options extends { useBigInt: infer UseBigInt } ? UseBigInt : false
 		>
-	: T extends d.TimestampType ? ResolveExtractionOption<
+	: T extends d.TimestampType ? Switch<
 			Array<Date>,
 			Float64Array,
 			Options extends { useDate: infer UseDate } ? UseDate : false
 		>
-	: T extends d.IntervalType ? ResolveExtractionOption<
+	: T extends d.IntervalType ? Switch<
 			Array<Date>,
 			number,
 			Options extends { useDate: infer UseDate } ? UseDate : false
@@ -205,12 +205,12 @@ export type ValueArray<
 		? Array<ValueArray<Child["type"], Options>>
 	: T extends d.StructType ? unknown
 	: T extends d.UnionType ? unknown
-	: T extends d.MapType ? ResolveExtractionOption<
+	: T extends d.MapType ? Switch<
 			Map<string, unknown>,
 			Array<[string, unknown]>,
 			Options extends { useMap: infer UseMap } ? UseMap : false
 		>
-	: T extends d.DurationType ? ResolveExtractionOption<
+	: T extends d.DurationType ? Switch<
 			bigint,
 			number,
 			Options extends { useBigInt: infer UseBigInt } ? UseBigInt : false
