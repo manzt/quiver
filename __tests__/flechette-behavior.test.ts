@@ -507,14 +507,14 @@ Deno.test("dictionary(int32) → number", () => {
 // List
 // =============================================================================
 
-Deno.test("list(int32) → Array<number>", () => {
+Deno.test("list(int32) → Int32Array", () => {
 	const t = roundTripTyped(
 		[["x", [[1, 2, 3], [4, 5]]]],
 		{ x: f.list(f.int32()) },
 	);
 	const val = firstValue(t, "x");
-	assertEquals(Array.isArray(val), true);
-	assertEquals(typeof (val as number[])[0], "number");
+	assertEquals(val instanceof Int32Array, true);
+	assertEquals((val as Int32Array)[0], 1);
 });
 
 Deno.test("list(utf8) → Array<string>", () => {
@@ -597,12 +597,14 @@ Deno.test("nullable utf8 → null for null values", () => {
 // Interval — useDate
 // =============================================================================
 
-Deno.test("interval default → number", () => {
+Deno.test("interval default → Float64Array (month-day-nano)", () => {
+	// Default interval unit is MONTH_DAY_NANO, expects [months, days, nanos]
 	const t = roundTripTyped(
-		[["x", [30]]],
+		[["x", [[1, 15, 0n]]]],
 		{ x: f.interval() },
 	);
-	assertEquals(typeof firstValue(t, "x"), "number");
+	const val = firstValue(t, "x");
+	assertEquals(val instanceof Float64Array, true);
 });
 
 // =============================================================================
