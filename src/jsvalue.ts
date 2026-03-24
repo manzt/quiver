@@ -14,10 +14,14 @@ type ResolveExtractionOption<True, False, Flag extends boolean | undefined> =
 		: Flag extends boolean ? True | False
 		: False;
 
-export type JsValue<
+// =============================================================================
+// Scalar — what .at(i) returns for a given DataType + ExtractionOptions
+// =============================================================================
+
+export type Scalar<
 	T extends d.DataType,
 	Options extends f.ExtractionOptions,
-> = T extends d.DictionaryType<infer Inner> ? JsValue<Inner, Options>
+> = T extends d.DictionaryType<infer Inner> ? Scalar<Inner, Options>
 	: T extends d.NoneType | d.NullType ? null
 	: T extends d.IntType<infer BitWidth> ? ResolveBitWidth<
 			BitWidth,
@@ -34,7 +38,7 @@ export type JsValue<
 	: T extends d.DecimalType ? ResolveExtractionOption<
 			bigint,
 			number,
-			Options extends { useDecimalBigInt: infer UseDecimalBigInt }
+			Options extends { useDecimalInt: infer UseDecimalBigInt }
 				? UseDecimalBigInt
 				: false
 		>
@@ -57,14 +61,14 @@ export type JsValue<
 			number,
 			Options extends { useDate: infer UseDate } ? UseDate : false
 		>
-	: T extends d.ListType<infer Child> ? Array<JsValue<Child["type"], Options>>
+	: T extends d.ListType<infer Child> ? ListScalar<Child["type"], Options>
 	: T extends d.FixedSizeListType<infer Child> ? {
-			[K in keyof Child]: JsValue<Child[K]["type"], Options>;
+			[K in keyof Child]: Scalar<Child[K]["type"], Options>;
 		}
-	: T extends d.LargeListType<infer Child>
-		? Array<JsValue<Child["type"], Options>>
-	: T extends d.ListViewType<infer Child>
-		? Array<JsValue<Child["type"], Options>>
+	: T extends d.LargeListType<infer Child> ? ListScalar<Child["type"], Options>
+	: T extends d.ListViewType<infer Child> ? ListScalar<Child["type"], Options>
+	: T extends d.LargeListViewType<infer Child>
+		? ListScalar<Child["type"], Options>
 	: T extends d.StructType ? unknown
 	: T extends d.UnionType ? unknown
 	: T extends d.MapType ? ResolveExtractionOption<
@@ -80,48 +84,81 @@ export type JsValue<
 	: T extends d.RunEndEncodedType ? unknown
 	: never;
 
-// TODO: I need to find a way to test the _inferred_ types from TypeScript. Maybe vitest?
+// =============================================================================
+// ListScalar — list element: TypedArray for numeric children, Array otherwise.
 //
-// type TestInt = JsValue<d.IntType<8 | 32 | 64>, { useBigInt: boolean }>;
-// type TestInt2 = JsValue<d.IntType<64>, { useBigInt: true }>;
-// type TestInt3 = JsValue<d.IntType<64>, { useBigInt: false }>;
-// type TestInt4 = JsValue<d.IntType<64>, { useBigInt: undefined }>;
-// type TestInt5 = JsValue<d.IntType<64>, { useBigInt: boolean }>;
-// type TestInt6 = JsValue<d.IntType<64>, { useDate: true }>;
+// Verified empirically against flechette:
+//   list(int32)  → Int32Array
+//   list(utf8)   → Array<string>
+//   list(int64)  → Array<number> (default) / BigInt64Array (useBigInt)
+//   list(float64) → Float64Array
+// =============================================================================
+
+type ListScalar<
+	ChildType extends d.DataType,
+	Options extends f.ExtractionOptions,
+> = TypedArrayFor<ChildType, Options> extends never
+	? Array<Scalar<ChildType, Options>>
+	: TypedArrayFor<ChildType, Options>;
+
+// =============================================================================
+// TypedArrayFor — the typed array type for a numeric DataType.
+// Returns `never` for non-numeric types (which use Array instead).
 //
-// type TestFloat = JsValue<d.FloatType, { useBigInt: true }>;
+// Derived from flechette's batch-type.js and verified empirically:
+//   Int8    → Int8Array        Uint8    → Uint8Array
+//   Int16   → Int16Array       Uint16   → Uint16Array
+//   Int32   → Int32Array       Uint32   → Uint32Array
+//   Int64   → Float64Array (default) / BigInt64Array (useBigInt)
+//   Uint64  → Float64Array (default) / BigUint64Array (useBigInt)
+//   Float16 → Float64Array (converted from Uint16Array storage)
+//   Float32 → Float32Array
+//   Float64 → Float64Array
+// =============================================================================
+
+type TypedArrayFor<
+	T extends d.DataType,
+	Options extends f.ExtractionOptions,
+> = T extends d.IntType<infer BW, infer Signed>
+	? BW extends 8 ? Signed extends true ? Int8Array : Uint8Array
+	: BW extends 16 ? Signed extends true ? Int16Array : Uint16Array
+	: BW extends 32 ? Signed extends true ? Int32Array : Uint32Array
+	: BW extends 64
+		? Options extends { useBigInt: true }
+			? Signed extends true ? BigInt64Array : BigUint64Array
+		: Float64Array
+	: never
+	: T extends d.FloatType<infer P> ? P extends 0 ? Float64Array // float16 is stored as Uint16, extracted as Float64
+		: P extends 1 ? Float32Array
+		: P extends 2 ? Float64Array
+		: Float32Array | Float64Array
+	: T extends d.DateType ? Options extends { useDate: true } ? never // Date[] → Array
+		: Float64Array
+	: T extends d.TimeType<infer BW> ? BW extends 32 ? Int32Array
+		: BW extends 64
+			? Options extends { useBigInt: true } ? BigInt64Array : Float64Array
+		: Int32Array | BigInt64Array | Float64Array
+	: T extends d.TimestampType ? Options extends { useDate: true } ? never // Date[] → Array
+		: Float64Array
+	: T extends d.DurationType
+		? Options extends { useBigInt: true } ? BigInt64Array : Float64Array
+	: T extends d.DecimalType ? Options extends { useDecimalInt: true } ? never // bigint[] → Array
+		: Float64Array
+	: never;
+
+// =============================================================================
+// ValueArray — what column.toArray() returns.
 //
-// type TestDecimalType = JsValue<d.DecimalType, { useDecimalBigInt: false }>; // should be number
-// type TestDecimalType2 = JsValue<d.DecimalType, { useDecimalBigInt: true }>; // should be bigint
-// type TestDecimalType3 = JsValue<d.DecimalType, { useDecimalBigInt: undefined }>; // should be number
-// type TestDecimalType4 = JsValue<d.DecimalType, { useDecimalBigInt: boolean }>; // should be number | bigint
-//
-// type TestTimeType = JsValue<d.TimeType<32 | 64>, { useBigInt: true }>; // should be number | bigint
-// type TestTimeType2 = JsValue<d.TimeType<32 | 64>, { useBigInt: false }>; // should be number
-// type TestTimeType3 = JsValue<d.TimeType<32 | 64>, { useBigInt: undefined }>; // should be number
-// type TestTimeType4 = JsValue<d.TimeType<32 | 64>, { useBigInt: boolean }>; // should be number | bigint
-// type TestTimeType5 = JsValue<d.TimeType<64>, { useBigInt: true }>; // should be bigint
-//
-// type TestDateType = JsValue<d.DateType, { useDate: true }>; // should be Date
-// type TestDateType2 = JsValue<d.DateType, { useDate: false }>; // should be number
-// type TestDateType3 = JsValue<d.DateType, { useDate: undefined }>; // should be number
-// type TestDateType4 = JsValue<d.DateType, { useDate: boolean }>; // should be Date | number
-// type TestDateType5 = JsValue<d.DateType, { useBigInt: true }>; // should be a number
-//
-// type TestMap = JsValue<d.MapType, { useMap: true }>; // should be Map<string, unknown>
-// type TestMap2 = JsValue<d.MapType, { useMap: false }>; // should be Array<[string, unknown]>
-// type TestMap3 = JsValue<d.MapType, { useMap: undefined }>; // should be Array<[string, unknown]>
-// type TestMap4 = JsValue<d.MapType, { useMap: boolean }>; // should be Map<string, unknown> | Array<[string, unknown]>
-//
-// // TODO: lists can be either typed arrays or lists (prefers typed arrays for numeric types)
-// type ListType = JsValue<
-// 	d.ListType<d.Field<string, d.IntType<32 | 64>>>,
-// 	{ useBigInt: true }
-// >; // should be Array<number | bigint>
-//
-// type FixedSizeListTypeTest = JsValue<
-// 	d.FixedSizeListType<
-// 		[d.Field<string, d.IntType<32>>, d.Field<string, d.IntType<64>>]
-// 	>,
-// 	{ useBigInt: true }
-// >;
+// Key behavior verified empirically:
+//   - Nullable columns ALWAYS return Array (nulls break typed array zero-copy)
+//   - Non-nullable numeric columns return their TypedArray
+//   - Non-numeric columns always return Array
+// =============================================================================
+
+export type ValueArray<
+	D extends d.DataType,
+	Options extends f.ExtractionOptions,
+	Nullable extends boolean = false,
+> = Nullable extends true ? Array<Scalar<D, Options> | null>
+	: TypedArrayFor<D, Options> extends never ? Array<Scalar<D, Options>>
+	: TypedArrayFor<D, Options>;

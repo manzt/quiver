@@ -119,7 +119,7 @@ export interface BoolType extends BaseDataType {
 	typeId: 6;
 }
 
-type DecimalBitWidth = 128 | 256;
+type DecimalBitWidth = 32 | 64 | 128 | 256;
 
 /** Fixed decimal number data type. */
 export interface DecimalType<BitWidth extends DecimalBitWidth = DecimalBitWidth>
@@ -128,7 +128,7 @@ export interface DecimalType<BitWidth extends DecimalBitWidth = DecimalBitWidth>
 	precision: number;
 	scale: number;
 	bitWidth: BitWidth;
-	values: BigUint64ArrayConstructor;
+	values: f.DecimalArrayConstructor;
 }
 
 /** Date data type. */
@@ -153,7 +153,7 @@ export interface TimeType<
 /** Timestamp data type. */
 export interface TimestampType<
 	Unit extends f.TimeUnit_ = f.TimeUnit_,
-	Timezone extends string | null = null,
+	Timezone extends string | null = string | null,
 > extends BaseDataType {
 	typeId: 10;
 	unit: Unit;
