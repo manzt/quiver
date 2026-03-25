@@ -5,7 +5,7 @@
 ```
 src/
   mod.ts          — public API, builders, assertSchema, table()
-  data-types.ts   — Arrow DataType interfaces (generic versions of flechette's)
+  data-types.ts   — Arrow DataType definitions (intersection-narrowed from flechette)
   types.ts        — Scalar<D, O>, ValueArray<D, O, N>, TypedArrayFor<D, O>
   table.gen.ts    — codegen'd Table<Fields, Opts> and Column<D, Opts, Nullable>
 scripts/
@@ -29,8 +29,9 @@ files. After upgrading flechette, regenerate and check for warnings:
 deno run -A scripts/codegen.ts
 ```
 
-The script warns about new members it doesn't know how to generify. Add rules
-for them in `scripts/codegen.ts` and fix any `// TODO:` comments in the output.
+The script parses generic method signatures, accumulates multi-line return
+types, and runs `deno fmt` on the output. It warns about new members it doesn't
+know how to generify — add rules for them in `scripts/codegen.ts`.
 
 ## Type architecture
 
@@ -44,33 +45,46 @@ Column<D, Options, Nullable>  — wraps flechette Column
 Table<Fields, Options>        — wraps flechette Table
 ```
 
+`data-types.ts` uses two strategies: simple types re-export from flechette
+directly, parameterized types use intersection narrowing
+(`f.IntType & { bitWidth: 32 }`), and container types are interfaces (because
+they reference `Field` recursively). All types are phantom — they exist only at
+the type level for inference.
+
+## Schema validation
+
+Record form (`q.table({...})`) is partial — only declared columns are validated.
+Extra columns in the table are ignored. Tuple form (`q.table([...])`) is strict
+— exact column count and order required.
+
+`assertSchema` collects all issues into a `QuiverError` with typed issue objects
+carrying `code`, `path`, `expected`, and `received`. `flatten()` returns
+`{ formErrors, fieldErrors }` matching zod's shape.
+
 ## Type coverage
 
-What quiver can statically type from a declared schema, and where the limits
-are.
-
-| Aspect                       | Typed?  | Notes                                                                                         |
-| ---------------------------- | ------- | --------------------------------------------------------------------------------------------- |
-| Scalar value per DataType    | yes     | `Scalar<D, O>` — all 27 Arrow types mapped                                                    |
-| Options affect scalar type   | yes     | `useBigInt`, `useDate`, `useDecimalInt`, `useMap`                                             |
-| Struct fields                | yes     | `{ [name]: Scalar<childType> }` with option propagation                                       |
-| Union variants               | yes     | union of children's scalar types                                                              |
-| Map key/value types          | yes     | when parameterized; falls back to `unknown` otherwise                                         |
-| List child type              | yes     | `Int32Array` for numeric, `Array<T>` for others                                               |
-| Dictionary unwrap            | yes     | resolves to inner value type                                                                  |
-| RunEndEncoded                | yes     | resolves to values child type                                                                 |
-| `toArray()` typed array      | yes     | `TypedArrayFor<D, O>` for non-nullable numerics                                               |
-| `toArray()` nullable         | partial | `TypedArray \| Array<T \| null>` — can't know at compile time whether nulls are present       |
-| `getChildAt(i)` record form  | partial | returns union of all column types (order unknown)                                             |
-| `getChildAt(i)` tuple form   | yes     | exact type per index                                                                          |
-| `getChild(name)`             | yes     | exact type via `Extract`                                                                      |
-| Column generic decomposition | no      | `Column<infer D>` hits TS recursion depth; use `.type` property instead                       |
-| `useProxy` struct shape      | no      | proxy objects don't support enumeration; type says `{ ... }` but `Object.keys()` returns `[]` |
+| Aspect                       | Typed?  | Notes                                                           |
+| ---------------------------- | ------- | --------------------------------------------------------------- |
+| Scalar value per DataType    | yes     | all 27 Arrow types mapped                                       |
+| Options affect scalar type   | yes     | `useBigInt`, `useDate`, `useDecimalInt`, `useMap`               |
+| Struct fields                | yes     | `{ [name]: Scalar<childType> }` with option propagation         |
+| Union variants               | yes     | union of children's scalar types                                |
+| Map key/value types          | yes     | when parameterized; falls back to `unknown` otherwise           |
+| List child type              | yes     | typed array for numeric, `Array` otherwise                      |
+| Dictionary unwrap            | yes     | resolves to inner value type                                    |
+| RunEndEncoded                | yes     | resolves to values child type                                   |
+| `toArray()` typed array      | yes     | `TypedArrayFor<D, O>` for non-nullable numerics                 |
+| `toArray()` nullable         | partial | `TypedArray \| Array<T \| null>` — depends on runtime nullCount |
+| `getChildAt(i)` tuple form   | yes     | exact type per index                                            |
+| `getChild(name)`             | yes     | exact type via `Extract`                                        |
+| `getChildAt(i)` record form  | unsafe  | index may refer to unvalidated column                           |
+| Column generic decomposition | no      | `Column<infer D>` hits TS recursion depth; use `.type` property |
+| `useProxy` struct shape      | no      | proxy objects don't support enumeration                         |
 
 ## Tests
 
 ```sh
 deno fmt --check        # formatting
 deno check              # compile-time type assertions
-deno test               # runtime flechette behavior tests
+deno test               # runtime behavior + schema validation tests
 ```
