@@ -432,7 +432,7 @@ const dictSchema = q.table({
 type DictTable = q.infer<typeof dictSchema>;
 declare const dict: DictTable;
 const dictRow = dict.at(0);
-//    ^? { category: any; code: any; }
+//    ^? { category: string; code: number; }
 
 // decimal32 with useDecimalInt — should be { d: number; } not bigint
 const dec32Schema = q.table({

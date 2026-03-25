@@ -343,9 +343,9 @@ export function map(
   return schema({ typeId: 17, children: [{ key, value }] });
 }
 /** Dictionary-encoded column. Scalar: unwraps to the dictionary value type. */
-export function dictionary(
-  valueType: SchemaEntry,
-): SchemaEntry<d.DictionaryType> {
+export function dictionary<T extends d.DataType>(
+  valueType: SchemaEntry<T>,
+): SchemaEntry<d.DictionaryType<T>> {
   return schema({ typeId: -1, dictionary: valueType });
 }
 /** Run-end encoded column. Scalar: the values type. */
