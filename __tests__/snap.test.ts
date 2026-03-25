@@ -477,7 +477,7 @@ const mapSchema = q.table({
 type MapTable = q.infer<typeof mapSchema>;
 declare const mapt: MapTable;
 const mapRow = mapt.at(0);
-//    ^? { kv: [unknown, unknown][]; }
+//    ^? { kv: [string, number][]; }
 
 // =============================================================================
 // ----------------------------- END TODO --------------------------------------

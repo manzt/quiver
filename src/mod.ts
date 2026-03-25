@@ -336,10 +336,17 @@ export function struct<
   return schema({ typeId: 13, children });
 }
 /** Key-value map. Scalar: `Array<[K, V]>`, or `Map<K, V>` with `useMap`. */
-export function map(
-  key: SchemaEntry,
-  value: SchemaEntry,
-): SchemaEntry<d.MapType> {
+export function map<K extends d.DataType, V extends d.DataType>(
+  key: SchemaEntry<K>,
+  value: SchemaEntry<V>,
+): SchemaEntry<
+  d.MapType<
+    d.Field<
+      "entries",
+      d.StructType<[d.Field<"key", K>, d.Field<"value", V>]>
+    >
+  >
+> {
   return schema({ typeId: 17, children: [{ key, value }] });
 }
 /** Dictionary-encoded column. Scalar: unwraps to the dictionary value type. */
