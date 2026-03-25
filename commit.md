@@ -1,20 +1,9 @@
-Add exhaustive vitest + type snapshot tests
+Add option variants and nullable tests to exhaustive suite
 
-A unified test file checks both the inferred TypeScript type (via
-//^? snapshots) and the runtime value (via vitest toMatchInlineSnapshot)
-for every builder × option combination. Each test creates a single-value
-single-column table and verifies three type snapshots (Column, toArray,
-at) plus two runtime snapshots.
+Adds missing option invariant tests (int32 + useBigInt still number,
+float64 + useBigInt still number), nullable variants (int64 + useBigInt,
+dateDay + useDate, bool), map + useMap, broad builder type snapshots,
+interval + useDate, and q.time(). Every test now has proper //^?
+snapshots for Column, toArray, and at types.
 
-Covers all integer widths (signed + unsigned ± useBigInt), all float
-widths, utf8/largeUtf8, bool, binary/fixedSizeBinary, dateDay
-(± useDate), dateMillisecond, timestamp (± useDate), duration
-(± useBigInt), decimal (128 + 32 ± useDecimalInt), time
-(second + microsecond), dictionary (utf8 + int32), list (int32 + utf8
-+ int64 useBigInt), struct (± useBigInt), map, nullable (int32 + utf8),
-either, nested list-of-struct, struct-with-list, and broad builders.
-
-Also fixes assertSchema to skip map's {key, value} child structure
-during recursive matching.
-
-103 type snapshots + 64 runtime tests.
+129 type snapshots + 75 runtime tests.

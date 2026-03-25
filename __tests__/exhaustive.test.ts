@@ -712,31 +712,162 @@ describe("struct with list", () => {
 });
 
 // =============================================================================
-// Broad builders
+// Option invariants — useBigInt doesn't affect small ints or floats
+// =============================================================================
+
+describe("int32 + useBigInt still number", () => {
+	const t = q.table({ a: q.int32() }, { useBigInt: true }).parseIPC(
+		ipc([1], f.int32()),
+	);
+	const col = t.getChild("a");
+	//    ^? q.Column<IntType<32, true>, { readonly useBigInt: true; }, false>
+	const val = col.at(0);
+	//    ^? number
+	test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+});
+
+describe("float64 + useBigInt still number", () => {
+	const t = q.table({ a: q.float64() }, { useBigInt: true }).parseIPC(
+		ipc([1.5], f.float64()),
+	);
+	const val = t.getChild("a").at(0);
+	//    ^? number
+	test("at(0)", () => expect(val).toMatchInlineSnapshot(`1.5`));
+});
+
+// =============================================================================
+// Nullable variants
+// =============================================================================
+
+describe("nullable int64 + useBigInt", () => {
+	const t = q
+		.table({ a: q.int64().nullable() }, { useBigInt: true })
+		.parseIPC(ipc([1n, null], f.int64()));
+	const col = t.getChild("a");
+	//    ^? q.Column<IntType<64, true>, { readonly useBigInt: true; }, true>
+	const arr = col.toArray();
+	//    ^? BigInt64Array<ArrayBufferLike> | (bigint | null)[]
+	const val = col.at(0);
+	//    ^? bigint | null
+	const nul = col.at(1);
+	//    ^? bigint | null
+	test("toArray", () => expect(arr).toMatchInlineSnapshot(`
+		[
+		  1n,
+		  null,
+		]
+	`));
+	test("at(0)", () => expect(val).toMatchInlineSnapshot(`1n`));
+	test("at(1) null", () => expect(nul).toMatchInlineSnapshot(`null`));
+});
+
+describe("nullable dateDay + useDate", () => {
+	const t = q
+		.table({ a: q.dateDay().nullable() }, { useDate: true })
+		.parseIPC(ipc([new Date("2024-01-01"), null], f.dateDay()));
+	const col = t.getChild("a");
+	//    ^? q.Column<DateType<0>, { readonly useDate: true; }, true>
+	const val = col.at(0);
+	//    ^? Date | null
+	const nul = col.at(1);
+	//    ^? Date | null
+	test("at(0)", () => expect(val instanceof Date).toMatchInlineSnapshot(`true`));
+	test("at(1) null", () => expect(nul).toMatchInlineSnapshot(`null`));
+});
+
+describe("nullable bool", () => {
+	const t = q.table({ a: q.bool().nullable() }).parseIPC(
+		ipc([true, null], f.bool()),
+	);
+	const col = t.getChild("a");
+	//    ^? q.Column<f.BoolType, {}, true>
+	const val = col.at(1);
+	//    ^? boolean | null
+	test("at(1) null", () => expect(val).toMatchInlineSnapshot(`null`));
+});
+
+// =============================================================================
+// Map + useMap
+// =============================================================================
+
+describe("map(utf8, int32) + useMap", () => {
+	const t = q
+		.table({ a: q.map(q.utf8(), q.int32()) }, { useMap: true })
+		.parseIPC(ipc([new Map([["k", 1]])], f.map(f.utf8(), f.int32())));
+	const col = t.getChild("a");
+	//    ^? q.Column<MapType<q.Field<"entries", StructType<[q.Field<"key", f.Utf8Type>, q.Field<"value", IntType<32, true>>]>>>, { readonly useMap: true; }, false>
+	const val = col.at(0);
+	//    ^? Map<string, number>
+	test("at(0)", () => expect(val instanceof Map).toMatchInlineSnapshot(`true`));
+});
+
+// =============================================================================
+// Broad builders — with type snapshots
 // =============================================================================
 
 describe("q.int() accepts int8", () => {
 	const t = q.table({ a: q.int() }).parseIPC(ipc([1], f.int8()));
-	test("at(0)", () => expect(t.getChild("a").at(0)).toMatchInlineSnapshot(`1`));
+	const col = t.getChild("a");
+	//    ^? q.Column<IntType<f.IntBitWidth, boolean>, {}, false>
+	const val = col.at(0);
+	//    ^? number
+	test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
 });
 
 describe("q.string() accepts largeUtf8", () => {
 	const t = q.table({ a: q.string() }).parseIPC(
 		ipc(["hi"], f.largeUtf8()),
 	);
-	test("at(0)", () => expect(t.getChild("a").at(0)).toMatchInlineSnapshot(`"hi"`));
+	const col = t.getChild("a");
+	//    ^? q.Column<f.Utf8Type | f.LargeUtf8Type | f.Utf8ViewType, {}, false>
+	const val = col.at(0);
+	//    ^? string
+	test("at(0)", () => expect(val).toMatchInlineSnapshot(`"hi"`));
 });
 
 describe("q.float() accepts float32", () => {
 	const t = q.table({ a: q.float() }).parseIPC(ipc([1.5], f.float32()));
-	test("at(0)", () =>
-		expect(typeof t.getChild("a").at(0)).toMatchInlineSnapshot(`"number"`));
+	const col = t.getChild("a");
+	//    ^? q.Column<FloatType<f.Precision_>, {}, false>
+	const val = col.at(0);
+	//    ^? number
+	test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"number"`));
 });
 
 describe("q.date() accepts dateMillisecond", () => {
 	const t = q.table({ a: q.date() }).parseIPC(
 		ipc([new Date("2024-01-01")], f.dateMillisecond()),
 	);
+	const col = t.getChild("a");
+	//    ^? q.Column<DateType<f.DateUnit_>, {}, false>
+	const val = col.at(0);
+	//    ^? number
+	test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"number"`));
+});
+
+describe("q.time() accepts timeSecond", () => {
+	const t = q.table({ a: q.time() }).parseIPC(
+		ipc([3600], f.timeSecond()),
+	);
+	const col = t.getChild("a");
+	//    ^? q.Column<TimeType<32 | 64, f.TimeUnit_>, {}, false>
+	const val = col.at(0);
+	//    ^? number
+	test("at(0)", () => expect(val).toMatchInlineSnapshot(`3600`));
+});
+
+// =============================================================================
+// Interval
+// =============================================================================
+
+describe("interval + useDate", () => {
+	const t = q.table({ a: q.interval() }, { useDate: true }).parseIPC(
+		ipc([[1, 15, 0n]], f.interval()),
+	);
+	const col = t.getChild("a");
+	//    ^? q.Column<IntervalType<f.IntervalUnit_>, { readonly useDate: true; }, false>
+	const val = col.at(0);
+	//    ^? Date
 	test("at(0)", () =>
-		expect(typeof t.getChild("a").at(0)).toMatchInlineSnapshot(`"number"`));
+		expect(val?.constructor.name).toMatchInlineSnapshot(`"Float64Array"`));
 });
