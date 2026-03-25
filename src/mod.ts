@@ -286,28 +286,34 @@ export function string(): SchemaEntry<
 // =============================================================================
 
 /** Variable-length list. Scalar: typed array for numeric children, `Array` otherwise. */
-export function list(child: SchemaEntry): SchemaEntry<d.ListType> {
+export function list<T extends d.DataType>(
+  child: SchemaEntry<T>,
+): SchemaEntry<d.ListType<d.Field<string, T>>> {
   return schema({ typeId: 12, children: [child] });
 }
 /** Variable-length list with 64-bit offsets. */
-export function largeList(child: SchemaEntry): SchemaEntry<d.LargeListType> {
+export function largeList<T extends d.DataType>(
+  child: SchemaEntry<T>,
+): SchemaEntry<d.LargeListType<d.Field<string, T>>> {
   return schema({ typeId: 21, children: [child] });
 }
 /** ListView with 32-bit offsets. */
-export function listView(child: SchemaEntry): SchemaEntry<d.ListViewType> {
+export function listView<T extends d.DataType>(
+  child: SchemaEntry<T>,
+): SchemaEntry<d.ListViewType<d.Field<string, T>>> {
   return schema({ typeId: 25, children: [child] });
 }
 /** ListView with 64-bit offsets. */
-export function largeListView(
-  child: SchemaEntry,
-): SchemaEntry<d.LargeListViewType> {
+export function largeListView<T extends d.DataType>(
+  child: SchemaEntry<T>,
+): SchemaEntry<d.LargeListViewType<d.Field<string, T>>> {
   return schema({ typeId: 26, children: [child] });
 }
 /** Fixed-size list. Scalar: typed array for numeric children, `Array` otherwise. */
-export function fixedSizeList(
-  child: SchemaEntry,
+export function fixedSizeList<T extends d.DataType>(
+  child: SchemaEntry<T>,
   stride: number,
-): SchemaEntry<d.FixedSizeListType> {
+): SchemaEntry<d.FixedSizeListType<[d.Field<string, T>]>> {
   return schema({ typeId: 16, stride, children: [child] });
 }
 /** Struct (object). Scalar: `{ [name]: value }` with option propagation through children. */

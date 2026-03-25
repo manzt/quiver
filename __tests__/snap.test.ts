@@ -413,7 +413,7 @@ const listSchema = q.table({
 type ListTable = q.infer<typeof listSchema>;
 declare const lt: ListTable;
 const listRow = lt.at(0);
-//    ^? { tags: Uint8Array<ArrayBufferLike> | Int8Array<ArrayBufferLike> | Uint16Array<ArrayBufferLike> | Int16Array<ArrayBufferLike> | Uint32Array<ArrayBufferLike> | Int32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike> | Float64Array<ArrayBufferLike> | Float64Array<ArrayBufferLike> | ... 6 more ... | Float64Array<...>; scores: Uint8Array<ArrayBufferLike> | ... 14 more ... | Float64Array<...>; nested: Uint8Array<ArrayBufferLike> | ... 14 more ... | Float64Array<...>; }
+//    ^? { tags: string[]; scores: Int32Array<ArrayBufferLike>; nested: Float64Array<ArrayBufferLike>[]; }
 
 // struct — should be { meta: { key: string; count: number; }; }
 const structSchema = q.table({
@@ -459,7 +459,7 @@ const listOptsSchema = q.table({
 type ListOptsTable = q.infer<typeof listOptsSchema>;
 declare const lot: ListOptsTable;
 const listOptsRow = lot.at(0);
-//    ^? { vals: Uint8Array<ArrayBufferLike> | Int8Array<ArrayBufferLike> | Uint16Array<ArrayBufferLike> | Int16Array<ArrayBufferLike> | Uint32Array<ArrayBufferLike> | Int32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike> | Float64Array<ArrayBufferLike> | Float32Array<ArrayBufferLike> | ... 7 more ... | BigInt64Array<...>; }
+//    ^? { vals: BigInt64Array<ArrayBufferLike>; }
 
 // nested struct of struct
 const deepStruct = q.table({

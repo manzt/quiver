@@ -1,7 +1,7 @@
-Fix either() to propagate child DataType union
+Fix list builders to propagate child DataType
 
-either() returned unparameterized SchemaEntry, losing the DataType
-information from its children. Now infers the union of all child
-DataTypes so `q.either([q.int32(), q.float64()])` carries
-`IntType<32, true> | FloatType<2>` at the type level, resolving to
-`number` in row types.
+list(), largeList(), listView(), largeListView(), and fixedSizeList()
+returned unparameterized ListType, losing the child type. Now generic
+over the child's DataType so `q.list(q.utf8())` carries
+`ListType<Field<string, Utf8Type>>` and resolves to `string[]` in rows,
+while `q.list(q.int32())` resolves to `Int32Array`.
