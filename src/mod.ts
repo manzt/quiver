@@ -576,13 +576,15 @@ function collectTypeIssues(
   for (const [key, expected] of Object.entries(match)) {
     if (key === "typeId") continue;
 
-    // Nested children for list types
+    // Nested children for list types (skip map's { key, value } structure)
     if (key === "children" && Array.isArray(expected)) {
+      // Map children are { key, value } objects for type inference only
+      if (expected.length > 0 && expected[0]?.key) continue;
       const actualChildren = (actual as any).children;
       if (!actualChildren) continue;
       for (let i = 0; i < expected.length; i++) {
         const childEntry = expected[i] as SchemaEntry;
-        if (actualChildren[i]?.type) {
+        if (childEntry?.match && actualChildren[i]?.type) {
           collectTypeIssues(
             childEntry.match,
             actualChildren[i].type,
