@@ -12,6 +12,11 @@ type ResolveNullable<T, Nullable extends boolean> = Nullable extends true
 	? T | null
 	: T;
 
+// Distributive: produces a union of Columns instead of a Column with unioned generics
+type DistributeColumn<F, Options extends ExtractionOptions> = F extends Field
+	? Column<F["type"], Options, F["nullable"]>
+	: never;
+
 type Row<Fields extends Array<Field>, Options extends ExtractionOptions> = {
 	[K in Fields[number]["name"]]: ResolveNullable<
 		Scalar<
@@ -74,7 +79,7 @@ export interface Table<
 	 */
 	getChildAt<Index extends number>(
 		index: Index,
-	): Column<Fields[Index]["type"], Options, Fields[Index]["nullable"]>;
+	): DistributeColumn<Fields[Index], Options>;
 
 	/**
 	 * Return the first child column with the given name.

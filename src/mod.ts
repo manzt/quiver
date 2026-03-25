@@ -1,7 +1,8 @@
 import * as f from "@uwdata/flechette";
 import type * as d from "./data-types.ts";
-export * from "@uwdata/flechette";
+import type { Table } from "./table.gen.ts";
 
+export * from "@uwdata/flechette";
 export type { DataType, Field, Schema } from "./data-types.ts";
 export type { Scalar, ValueArray } from "./types.ts";
 export type { Column, Table } from "./table.gen.ts";
@@ -294,10 +295,11 @@ function assertSchema(
 }
 
 // =============================================================================
-// Type-level mapping: SchemaEntry record → Field array for Table generic
+// Type-level mapping: entries → Field array for Table generic
 // =============================================================================
 
-type EntriesToFields<T extends Record<string, SchemaEntry>> = Array<
+// Record form → unordered (Array of union)
+type RecordToFields<T extends Record<string, SchemaEntry>> = Array<
 	{
 		[K in keyof T & string]: {
 			name: K;
@@ -307,22 +309,67 @@ type EntriesToFields<T extends Record<string, SchemaEntry>> = Array<
 	}[keyof T & string]
 >;
 
+// Tuple form → ordered (mapped tuple)
+type TupleToFields<
+	T extends ReadonlyArray<readonly [string, SchemaEntry]>,
+> = {
+	[K in keyof T]: {
+		name: T[K] extends readonly [infer N, any] ? N : never;
+		type: T[K] extends readonly [any, SchemaEntry<infer D, any>] ? D
+			: never;
+		nullable: T[K] extends readonly [any, SchemaEntry<any, infer N>] ? N
+			: false;
+	};
+};
+
 // =============================================================================
-// table() — accepts SchemaEntry wrappers, validates on parse
+// table() — accepts tuple or record form, validates on parse
 // =============================================================================
 
+// Tuple form: ordered fields
+export function table<
+	const Entries extends ReadonlyArray<readonly [string, SchemaEntry]>,
+	const Options extends f.ExtractionOptions = {},
+>(entries: Entries, options?: Options): {
+	parseIPC(
+		ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>,
+	): Table<
+		TupleToFields<Entries> & Array<d.Field>,
+		Options
+	>;
+};
+
+// Record form: unordered fields
 export function table<
 	const Entries extends Record<string, SchemaEntry>,
 	const Options extends f.ExtractionOptions = {},
 >(entries: Entries, options?: Options): {
 	parseIPC(
 		ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>,
-	): import("./table.gen.ts").Table<EntriesToFields<Entries>, Options>;
-} {
+	): Table<RecordToFields<Entries>, Options>;
+};
+
+export function table(
+	entries:
+		| ReadonlyArray<readonly [string, SchemaEntry]>
+		| Record<string, SchemaEntry>,
+	options: f.ExtractionOptions = {},
+) {
+	// Normalize tuple form to record for assertSchema
+	let record: Record<string, SchemaEntry>;
+	if (Array.isArray(entries)) {
+		record = {};
+		for (const [name, entry] of entries) {
+			record[name] = entry;
+		}
+	} else {
+		record = entries as Record<string, SchemaEntry>;
+	}
+
 	return {
 		parseIPC(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>) {
 			const table = f.tableFromIPC(ipc, options);
-			assertSchema(entries, table.schema);
+			assertSchema(record, table.schema);
 			return table as any;
 		},
 	};

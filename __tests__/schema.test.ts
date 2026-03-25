@@ -463,3 +463,40 @@ Deno.test("parsed table with options propagates useBigInt", () => {
 	const table = schema.parseIPC(ipc);
 	assertEquals(typeof table.at(0).x, "bigint");
 });
+
+// =============================================================================
+// 9. Tuple form — ordered fields
+// =============================================================================
+
+Deno.test("tuple form: parseIPC succeeds with matching schema", () => {
+	const ipc = toIPC(
+		[["a", [1, 2]], ["b", ["x", "y"]]],
+		{ a: f.int32(), b: f.utf8() },
+	);
+	const schema = q.table([
+		["a", q.int32()],
+		["b", q.utf8()],
+	]);
+	const table = schema.parseIPC(ipc);
+	assertEquals(table.numCols, 2);
+	assertEquals(table.toArray(), [{ a: 1, b: "x" }, { a: 2, b: "y" }]);
+});
+
+Deno.test("tuple form: parseIPC throws on type mismatch", () => {
+	const ipc = toIPC([["x", [1]]], { x: f.int32() });
+	const schema = q.table([["x", q.utf8()]]);
+	assertThrows(() => schema.parseIPC(ipc));
+});
+
+Deno.test("tuple form: parseIPC throws on name mismatch", () => {
+	const ipc = toIPC([["x", [1]]], { x: f.int32() });
+	const schema = q.table([["y", q.int32()]]);
+	assertThrows(() => schema.parseIPC(ipc));
+});
+
+Deno.test("tuple form: supports nullable", () => {
+	const ipc = toIPC([["x", [1, null, 3]]], { x: f.int32() });
+	const schema = q.table([["x", q.int32().nullable()]]);
+	const table = schema.parseIPC(ipc);
+	assertEquals(table.numRows, 3);
+});

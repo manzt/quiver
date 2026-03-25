@@ -19,7 +19,9 @@
 
 import type { Scalar, ValueArray } from "../src/types.ts";
 import type * as d from "../src/data-types.ts";
+import type { Column, Table } from "../src/table.gen.ts";
 import type { Equal, Expect } from "./test-utils.ts";
+import * as q from "../src/mod.ts";
 
 // =============================================================================
 // 1. JsValue: Primitives
@@ -575,3 +577,101 @@ type _DictListStr = Expect<
 		Array<string>
 	>
 >;
+
+// =============================================================================
+// 3. Table inference — q.infer, row types, getChild, getChildAt
+// =============================================================================
+
+// -- Record form: row field types ---------------------------------------------
+
+const _recSchema = q.table({
+	id: q.int32(),
+	name: q.utf8().nullable(),
+	score: q.float64(),
+}, { useDate: true });
+
+type RecTable = q.infer<typeof _recSchema>;
+declare const _rec: RecTable;
+declare const _recRow: ReturnType<RecTable["at"]>;
+
+type _RecRowId = Expect<Equal<typeof _recRow.id, number>>;
+type _RecRowName = Expect<Equal<typeof _recRow.name, string | null>>;
+type _RecRowScore = Expect<Equal<typeof _recRow.score, number>>;
+
+// -- Record form: getChild resolves correct DataType per column ---------------
+
+// Use declare + method call so TS resolves the generic at the call site.
+// Then check .type (which is just D, no deep Scalar expansion).
+
+// Column-level type tests need to call generic methods like getChild("id")
+// to trigger TypeScript's call-site inference. But top-level `declare const`
+// values cause runtime errors when methods are called on them.
+//
+// Pattern: wrap in a never-called function + use `null! as T` to get a
+// typed value. TS checks types inside the function body even though it
+// never runs. Access `.type` on Column to read the DataType directly —
+// avoid decomposing the full Column generic (e.g. `Column<infer D, ...>`)
+// which triggers "excessively deep" errors due to Scalar's recursion.
+function _columnTests() {
+	// -- Record form: getChild resolves correct DataType per column name ---
+	const rec = null! as RecTable;
+	const idCol = rec.getChild("id");
+	const nameCol = rec.getChild("name");
+
+	type _RecIdType = Expect<Equal<typeof idCol.type, d.IntType<32, true>>>;
+	type _RecNameType = Expect<Equal<typeof nameCol.type, d.Utf8Type>>;
+
+	// -- Tuple form: getChildAt is exact per index ------------------------
+	const tupleSchema = q.table([
+		["id", q.int32()],
+		["name", q.utf8().nullable()],
+		["score", q.float64()],
+	]);
+	type TupleTable = q.infer<typeof tupleSchema>;
+	const tuple = null! as TupleTable;
+
+	const col0 = tuple.getChildAt(0);
+	const col1 = tuple.getChildAt(1);
+	const col2 = tuple.getChildAt(2);
+
+	type _TupleCol0 = Expect<Equal<typeof col0.type, d.IntType<32, true>>>;
+	type _TupleCol1 = Expect<Equal<typeof col1.type, d.Utf8Type>>;
+	type _TupleCol2 = Expect<Equal<typeof col2.type, d.FloatType<2>>>;
+
+	// Tuple row type
+	type TupleRow = ReturnType<TupleTable["at"]>;
+	type _TupleRowId = Expect<Equal<TupleRow["id"], number>>;
+	type _TupleRowName = Expect<Equal<TupleRow["name"], string | null>>;
+	type _TupleRowScore = Expect<Equal<TupleRow["score"], number>>;
+
+	// -- Record form: getChildAt returns union of column types -------------
+	const mixedSchema = q.table({
+		x: q.int64(),
+		y: q.int32().nullable(),
+	}, { useBigInt: true });
+	type MixedTable = q.infer<typeof mixedSchema>;
+	const mixed = null! as MixedTable;
+
+	const mixedCol = mixed.getChildAt(0);
+	type MixedColType = typeof mixedCol.type;
+
+	type _MixedHasInt64 = Expect<
+		Equal<d.IntType<64, true> extends MixedColType ? true : false, true>
+	>;
+	type _MixedHasInt32 = Expect<
+		Equal<d.IntType<32, true> extends MixedColType ? true : false, true>
+	>;
+}
+
+// -- Options propagation ------------------------------------------------------
+
+const _bigintSchema2 = q.table({
+	x: q.int64(),
+	y: q.int32(),
+}, { useBigInt: true });
+
+type BigIntTable2 = q.infer<typeof _bigintSchema2>;
+type BigIntRow2 = ReturnType<BigIntTable2["at"]>;
+
+type _BigIntRowX = Expect<Equal<BigIntRow2["x"], bigint>>;
+type _BigIntRowY = Expect<Equal<BigIntRow2["y"], number>>;
