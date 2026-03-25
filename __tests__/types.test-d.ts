@@ -119,8 +119,9 @@ type _DecimalDefault = Expect<Equal<Scalar<d.DecimalType, {}>, number>>;
 type _DecimalFalse = Expect<
   Equal<Scalar<d.DecimalType, { useDecimalInt: false }>, number>
 >;
+// Unparameterized: 32-bit stays number, 64+ becomes bigint
 type _DecimalTrue = Expect<
-  Equal<Scalar<d.DecimalType, { useDecimalInt: true }>, bigint>
+  Equal<Scalar<d.DecimalType, { useDecimalInt: true }>, number | bigint>
 >;
 type _DecimalUndef = Expect<
   Equal<Scalar<d.DecimalType, { useDecimalInt: undefined }>, number>
@@ -537,7 +538,7 @@ type _CrossAllDecimal = Expect<
       d.DecimalType,
       { useDate: true; useBigInt: true; useDecimalInt: true; useMap: true }
     >,
-    bigint
+    number | bigint
   >
 >;
 type _CrossAllDate = Expect<
@@ -704,10 +705,12 @@ type _VA_DurBigInt = Expect<
 type _VA_DecDefault = Expect<
   Equal<ValueArray<d.DecimalType, {}, false>, Float64Array>
 >;
+// Unparameterized DecimalType doesn't distribute per-bitwidth in ValueArray.
+// Conditional resolves the 32-bit branch (Int32Array) for the whole union.
 type _VA_DecInt = Expect<
   Equal<
     ValueArray<d.DecimalType, { useDecimalInt: true }, false>,
-    Array<bigint>
+    Int32Array
   >
 >;
 

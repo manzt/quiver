@@ -35,12 +35,13 @@ export type Scalar<
     | d.BinaryViewType ? Uint8Array
   : T extends d.Utf8Type | d.LargeUtf8Type | d.Utf8ViewType ? string
   : T extends d.BoolType ? boolean
-  : T extends d.DecimalType ? ResolveExtractionOption<
+  : T extends d.DecimalType<infer BW>
+    // 32-bit decimals stay number even with useDecimalInt; 64-bit+ become bigint
+    ? BW extends 32 ? number
+    : ResolveExtractionOption<
       bigint,
       number,
-      Options extends { useDecimalInt: infer UseDecimalBigInt }
-        ? UseDecimalBigInt
-        : false
+      Options extends { useDecimalInt: infer Flag } ? Flag : false
     >
   : T extends d.DateType ? ResolveExtractionOption<
       Date,
@@ -174,7 +175,10 @@ type TypedArrayFor<
     : Float64Array
   : T extends d.DurationType
     ? Options extends { useBigInt: true } ? BigInt64Array : Float64Array
-  : T extends d.DecimalType ? Options extends { useDecimalInt: true } ? never // bigint[] → Array
+  : T extends d.DecimalType<infer BW>
+    ? Options extends { useDecimalInt: true }
+      ? BW extends 32 ? Int32Array // 32-bit stays number → Int32Array
+      : never // 64-bit+ becomes bigint → Array
     : Float64Array
   : never;
 

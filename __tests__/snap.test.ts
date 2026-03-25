@@ -100,7 +100,7 @@ type DecTable = q.infer<typeof decSchema>;
 declare const dect: DecTable;
 
 const decRow = dect.at(0);
-//    ^? { d128: bigint; d32: bigint; f: number; }
+//    ^? { d128: bigint; d32: number; f: number; }
 
 // =============================================================================
 // Broad builders
@@ -388,10 +388,7 @@ const tupleSelect = ot.selectAt([0, 2]);
 //    ^? q.Table<[{ name: "x"; type: IntType<32, true>; nullable: false; }, { name: "z"; type: FloatType<2>; nullable: false; }], {}>
 
 // =============================================================================
-// ----------------------------- TODO ------------------------------------------
-// The snapshots below reveal type inference bugs where builder child
-// types don't propagate through SchemaEntry generics. Fix the builders,
-// then update the snapshots.
+// Nested and complex types
 // =============================================================================
 
 // either — should be { val: number; label: string | null; }
@@ -441,7 +438,7 @@ const dec32Schema = q.table({
 type Dec32Table = q.infer<typeof dec32Schema>;
 declare const d32t: Dec32Table;
 const dec32Row = d32t.at(0);
-//    ^? { d: bigint; }
+//    ^? { d: number; }
 
 // struct with useBigInt — should propagate through children
 const structOptsSchema = q.table({
@@ -479,6 +476,4 @@ declare const mapt: MapTable;
 const mapRow = mapt.at(0);
 //    ^? { kv: [string, number][]; }
 
-// =============================================================================
-// ----------------------------- END TODO --------------------------------------
 // =============================================================================

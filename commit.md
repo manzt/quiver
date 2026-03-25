@@ -1,6 +1,6 @@
-Fix map() to propagate key and value DataTypes
+Fix decimal32 with useDecimalInt to resolve as number
 
-map() returned unparameterized MapType so key/value types resolved to
-`unknown`. Now constructs the correct Arrow Map structure with typed
-key/value Fields, so `q.map(q.utf8(), q.int32())` resolves to
-`[string, number][]` in rows (or `Map<string, number>` with useMap).
+Flechette returns `number` (not `bigint`) for 32-bit decimals with
+useDecimalInt, and `Int32Array` for toArray(). The Scalar and
+TypedArrayFor mappings now check bitWidth — 32-bit stays number/
+Int32Array, 64-bit+ becomes bigint/Array.
