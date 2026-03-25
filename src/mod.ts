@@ -131,16 +131,81 @@ export function dateDay() {
 export function dateMillisecond() {
 	return schema<d.DateType<1>>({ typeId: 8, unit: 1 });
 }
+
+export function timeSecond() {
+	return schema<d.TimeType<32>>({ typeId: 9, bitWidth: 32, unit: 0 });
+}
+export function timeMillisecond() {
+	return schema<d.TimeType<32>>({ typeId: 9, bitWidth: 32, unit: 1 });
+}
+export function timeMicrosecond() {
+	return schema<d.TimeType<64>>({ typeId: 9, bitWidth: 64, unit: 2 });
+}
+export function timeNanosecond() {
+	return schema<d.TimeType<64>>({ typeId: 9, bitWidth: 64, unit: 3 });
+}
+
 export function timestamp(unit?: f.TimeUnit_, timezone?: string | null) {
 	const match: TypeMatcher = { typeId: 10 };
 	if (unit !== undefined) match.unit = unit;
 	if (timezone !== undefined) match.timezone = timezone;
 	return schema<d.TimestampType>(match);
 }
+export function interval(unit?: f.IntervalUnit_) {
+	const match: TypeMatcher = { typeId: 11 };
+	if (unit !== undefined) match.unit = unit;
+	return schema<d.IntervalType>(match);
+}
 export function duration(unit?: f.TimeUnit_) {
 	const match: TypeMatcher = { typeId: 18 };
 	if (unit !== undefined) match.unit = unit;
 	return schema<d.DurationType>(match);
+}
+
+export function decimal(precision: number, scale: number, bitWidth?: number) {
+	const match: TypeMatcher = { typeId: 7, precision, scale };
+	if (bitWidth !== undefined) match.bitWidth = bitWidth;
+	return schema<d.DecimalType>(match);
+}
+export function decimal32(precision: number, scale: number) {
+	return schema<d.DecimalType<32>>({
+		typeId: 7,
+		precision,
+		scale,
+		bitWidth: 32,
+	});
+}
+export function decimal64(precision: number, scale: number) {
+	return schema<d.DecimalType<64>>({
+		typeId: 7,
+		precision,
+		scale,
+		bitWidth: 64,
+	});
+}
+export function decimal128(precision: number, scale: number) {
+	return schema<d.DecimalType<128>>({
+		typeId: 7,
+		precision,
+		scale,
+		bitWidth: 128,
+	});
+}
+export function decimal256(precision: number, scale: number) {
+	return schema<d.DecimalType<256>>({
+		typeId: 7,
+		precision,
+		scale,
+		bitWidth: 256,
+	});
+}
+
+export function nullType() {
+	return schema<d.NullType>({ typeId: 1 });
+}
+
+export function fixedSizeBinary(stride: number) {
+	return schema<d.FixedSizeBinaryType>({ typeId: 15, stride });
 }
 
 // =============================================================================
@@ -156,6 +221,9 @@ export function float() {
 export function date() {
 	return schema<d.DateType>({ typeId: 8 });
 }
+export function time() {
+	return schema<d.TimeType>({ typeId: 9 });
+}
 export function string() {
 	return schema<d.Utf8Type | d.LargeUtf8Type | d.Utf8ViewType>({
 		typeId: [5, 20, 24],
@@ -169,11 +237,39 @@ export function string() {
 export function list(child: SchemaEntry) {
 	return schema<d.ListType>({ typeId: 12, children: [child] });
 }
+export function largeList(child: SchemaEntry) {
+	return schema<d.LargeListType>({ typeId: 21, children: [child] });
+}
+export function listView(child: SchemaEntry) {
+	return schema<d.ListViewType>({ typeId: 25, children: [child] });
+}
+export function largeListView(child: SchemaEntry) {
+	return schema<d.LargeListViewType>({ typeId: 26, children: [child] });
+}
+export function fixedSizeList(child: SchemaEntry, stride: number) {
+	return schema<d.FixedSizeListType>({
+		typeId: 16,
+		stride,
+		children: [child],
+	});
+}
 export function struct(children: Record<string, SchemaEntry>) {
 	return schema<d.StructType>({ typeId: 13, children });
 }
+export function map(key: SchemaEntry, value: SchemaEntry) {
+	return schema<d.MapType>({
+		typeId: 17,
+		children: [{ key, value }],
+	});
+}
 export function dictionary(valueType: SchemaEntry) {
 	return schema<d.DictionaryType>({ typeId: -1, dictionary: valueType });
+}
+export function runEndEncoded(runs: SchemaEntry, values: SchemaEntry) {
+	return schema<d.RunEndEncodedType>({
+		typeId: 22,
+		children: [runs, values],
+	});
 }
 
 // =============================================================================

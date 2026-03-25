@@ -571,6 +571,64 @@ Deno.test("struct propagates useDate", () => {
 	assertInstanceOf(val.a, Date);
 });
 
+Deno.test("nested struct → { inner: { val: number } }", () => {
+	const t = roundTripTyped(
+		[["x", [{ inner: { val: 42 } }]]],
+		{ x: f.struct({ inner: f.struct({ val: f.int32() }) }) },
+	);
+	const val = firstValue(t, "x") as Record<string, Record<string, unknown>>;
+	assertEquals(val.inner.val, 42);
+});
+
+Deno.test("struct with list child → { vals: Int32Array }", () => {
+	const t = roundTripTyped(
+		[["x", [{ vals: [1, 2, 3] }]]],
+		{ x: f.struct({ vals: f.list(f.int32()) }) },
+	);
+	const val = firstValue(t, "x") as Record<string, unknown>;
+	assertInstanceOf(val.vals, Int32Array);
+});
+
+Deno.test("list of structs → Array<{ a: number }>", () => {
+	const t = roundTripTyped(
+		[["x", [[{ a: 1 }, { a: 2 }]]]],
+		{ x: f.list(f.struct({ a: f.int32() })) },
+	);
+	const val = firstValue(t, "x") as Array<Record<string, unknown>>;
+	assertEquals(Array.isArray(val), true);
+	assertEquals(val[0].a, 1);
+	assertEquals(val[1].a, 2);
+});
+
+Deno.test("list of list → Array<Int32Array>", () => {
+	const t = roundTripTyped(
+		[["x", [[[1, 2], [3]]]]],
+		{ x: f.list(f.list(f.int32())) },
+	);
+	const val = firstValue(t, "x") as Array<unknown>;
+	assertEquals(Array.isArray(val), true);
+	assertInstanceOf(val[0], Int32Array);
+});
+
+Deno.test("map key/value types are preserved", () => {
+	const t = roundTripTyped(
+		[["x", [new Map([["k", 1]])]]],
+		{ x: f.map(f.utf8(), f.int32()) },
+	);
+	const val = firstValue(t, "x") as Array<[string, number]>;
+	assertEquals(val[0][0], "k");
+	assertEquals(typeof val[0][1], "number");
+});
+
+Deno.test("empty table (0 rows)", () => {
+	const t = roundTripTyped(
+		[["x", []]],
+		{ x: f.int32() },
+	);
+	assertEquals(t.numRows, 0);
+	assertEquals(t.toArray().length, 0);
+});
+
 // =============================================================================
 // Null handling
 // =============================================================================

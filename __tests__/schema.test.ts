@@ -145,6 +145,96 @@ Deno.test("largeBinary() produces LargeBinaryType", () => {
 	assertEquals(s.match.typeId, 19);
 });
 
+Deno.test("timeSecond() produces TimeType with bitWidth=32, unit=0", () => {
+	const s = q.timeSecond();
+	assertEquals(s.match.typeId, 9);
+	assertEquals(s.match.bitWidth, 32);
+	assertEquals(s.match.unit, 0);
+});
+
+Deno.test("timeMillisecond() produces TimeType with bitWidth=32, unit=1", () => {
+	const s = q.timeMillisecond();
+	assertEquals(s.match.typeId, 9);
+	assertEquals(s.match.bitWidth, 32);
+	assertEquals(s.match.unit, 1);
+});
+
+Deno.test("timeMicrosecond() produces TimeType with bitWidth=64, unit=2", () => {
+	const s = q.timeMicrosecond();
+	assertEquals(s.match.typeId, 9);
+	assertEquals(s.match.bitWidth, 64);
+	assertEquals(s.match.unit, 2);
+});
+
+Deno.test("timeNanosecond() produces TimeType with bitWidth=64, unit=3", () => {
+	const s = q.timeNanosecond();
+	assertEquals(s.match.typeId, 9);
+	assertEquals(s.match.bitWidth, 64);
+	assertEquals(s.match.unit, 3);
+});
+
+Deno.test("decimal128() produces DecimalType with bitWidth=128", () => {
+	const s = q.decimal128(10, 2);
+	assertEquals(s.match.typeId, 7);
+	assertEquals(s.match.precision, 10);
+	assertEquals(s.match.scale, 2);
+	assertEquals(s.match.bitWidth, 128);
+});
+
+Deno.test("decimal() produces DecimalType (broad)", () => {
+	const s = q.decimal(10, 2);
+	assertEquals(s.match.typeId, 7);
+	assertEquals(s.match.precision, 10);
+	assertEquals(s.match.scale, 2);
+});
+
+Deno.test("interval() produces IntervalType", () => {
+	const s = q.interval();
+	assertEquals(s.match.typeId, 11);
+});
+
+Deno.test("fixedSizeBinary() produces FixedSizeBinaryType", () => {
+	const s = q.fixedSizeBinary(16);
+	assertEquals(s.match.typeId, 15);
+	assertEquals(s.match.stride, 16);
+});
+
+Deno.test("fixedSizeList() produces FixedSizeListType", () => {
+	const s = q.fixedSizeList(q.int32(), 3);
+	assertEquals(s.match.typeId, 16);
+	assertEquals(s.match.stride, 3);
+});
+
+Deno.test("largeList() produces LargeListType", () => {
+	const s = q.largeList(q.int32());
+	assertEquals(s.match.typeId, 21);
+});
+
+Deno.test("nullType() produces NullType", () => {
+	const s = q.nullType();
+	assertEquals(s.match.typeId, 1);
+});
+
+Deno.test("q.time() accepts timeSecond column", () => {
+	const ipc = toIPC([["x", [3600]]], { x: f.timeSecond() });
+	const schema = q.table({ x: q.time() });
+	const table = schema.parseIPC(ipc);
+	assertEquals(table.numRows, 1);
+});
+
+Deno.test("q.time() accepts timeNanosecond column", () => {
+	const ipc = toIPC([["x", [3600000000000n]]], { x: f.timeNanosecond() });
+	const schema = q.table({ x: q.time() });
+	const table = schema.parseIPC(ipc);
+	assertEquals(table.numRows, 1);
+});
+
+Deno.test("q.time() rejects int32 column", () => {
+	const ipc = toIPC([["x", [1]]], { x: f.int32() });
+	const schema = q.table({ x: q.time() });
+	assertThrows(() => schema.parseIPC(ipc));
+});
+
 // =============================================================================
 // 2. Nullable chaining
 // =============================================================================

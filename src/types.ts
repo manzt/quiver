@@ -69,11 +69,41 @@ export type Scalar<
 	: T extends d.ListViewType<infer Child> ? ListScalar<Child["type"], Options>
 	: T extends d.LargeListViewType<infer Child>
 		? ListScalar<Child["type"], Options>
-	: T extends d.StructType ? unknown
-	: T extends d.UnionType ? unknown
-	: T extends d.MapType ? ResolveExtractionOption<
-			Map<string, unknown>,
-			Array<[string, unknown]>,
+	: T extends d.StructType<infer Children> ? {
+			[K in Children[number]["name"]]: Scalar<
+				Extract<Children[number], { name: K }>["type"],
+				Options
+			>;
+		}
+	: T extends d.UnionType<infer Children>
+		? Scalar<Children[number]["type"], Options>
+	: T extends d.MapType<infer Child>
+	// Map child is a struct with "key" and "value" fields
+		? Child["type"] extends d.StructType<infer KV> ? ResolveExtractionOption<
+				Map<
+					Scalar<Extract<KV[number], { name: "key" }>["type"], Options>,
+					Scalar<
+						Extract<KV[number], { name: "value" }>["type"],
+						Options
+					>
+				>,
+				Array<
+					[
+						Scalar<
+							Extract<KV[number], { name: "key" }>["type"],
+							Options
+						>,
+						Scalar<
+							Extract<KV[number], { name: "value" }>["type"],
+							Options
+						>,
+					]
+				>,
+				Options extends { useMap: infer UseMap } ? UseMap : false
+			>
+		: ResolveExtractionOption<
+			Map<unknown, unknown>,
+			Array<[unknown, unknown]>,
 			Options extends { useMap: infer UseMap } ? UseMap : false
 		>
 	: T extends d.DurationType ? ResolveExtractionOption<
@@ -81,7 +111,8 @@ export type Scalar<
 			number,
 			Options extends { useBigInt: infer UseBigInt } ? UseBigInt : false
 		>
-	: T extends d.RunEndEncodedType ? unknown
+	: T extends d.RunEndEncodedType<any, infer Values>
+		? Scalar<Values["type"], Options>
 	: never;
 
 // =============================================================================

@@ -228,23 +228,40 @@ type _DurBool = Expect<
 
 // -- Map × useMap -------------------------------------------------------------
 
+// Unparameterized MapType — child type info is lost, falls back to unknown
 type _MapDefault = Expect<
-	Equal<Scalar<d.MapType, {}>, Array<[string, unknown]>>
+	Equal<Scalar<d.MapType, {}>, Array<[unknown, unknown]>>
 >;
 type _MapTrue = Expect<
-	Equal<Scalar<d.MapType, { useMap: true }>, Map<string, unknown>>
+	Equal<Scalar<d.MapType, { useMap: true }>, Map<unknown, unknown>>
 >;
 type _MapFalse = Expect<
-	Equal<Scalar<d.MapType, { useMap: false }>, Array<[string, unknown]>>
+	Equal<Scalar<d.MapType, { useMap: false }>, Array<[unknown, unknown]>>
 >;
 type _MapUndef = Expect<
-	Equal<Scalar<d.MapType, { useMap: undefined }>, Array<[string, unknown]>>
+	Equal<Scalar<d.MapType, { useMap: undefined }>, Array<[unknown, unknown]>>
 >;
 type _MapBool = Expect<
 	Equal<
 		Scalar<d.MapType, { useMap: boolean }>,
-		Map<string, unknown> | Array<[string, unknown]>
+		Map<unknown, unknown> | Array<[unknown, unknown]>
 	>
+>;
+
+// Parameterized Map with typed key/value
+type TypedMap = d.MapType<
+	d.Field<
+		"entries",
+		d.StructType<
+			[d.Field<"key", d.Utf8Type>, d.Field<"value", d.IntType<32, true>>]
+		>
+	>
+>;
+type _TypedMapDefault = Expect<
+	Equal<Scalar<TypedMap, {}>, Array<[string, number]>>
+>;
+type _TypedMapUseMap = Expect<
+	Equal<Scalar<TypedMap, { useMap: true }>, Map<string, number>>
 >;
 
 // =============================================================================
@@ -421,11 +438,79 @@ type _FixedSizeListMixed = Expect<
 	>
 >;
 
-// -- Struct / Union / RunEndEncoded (currently unknown) -----------------------
+// -- Struct — maps children to { [name]: Scalar<childType> } ------------------
 
-type _Struct = Expect<Equal<Scalar<d.StructType, {}>, unknown>>;
-type _Union = Expect<Equal<Scalar<d.UnionType, {}>, unknown>>;
-type _RunEndEncoded = Expect<Equal<Scalar<d.RunEndEncodedType, {}>, unknown>>;
+type _StructTyped = Expect<
+	Equal<
+		Scalar<
+			d.StructType<
+				[d.Field<"a", d.IntType<32, true>>, d.Field<"b", d.Utf8Type>]
+			>,
+			{}
+		>,
+		{ a: number; b: string }
+	>
+>;
+
+type _StructWithOptions = Expect<
+	Equal<
+		Scalar<
+			d.StructType<
+				[d.Field<"x", d.IntType<64, true>>, d.Field<"y", d.DateType>]
+			>,
+			{ useBigInt: true; useDate: true }
+		>,
+		{ x: bigint; y: Date }
+	>
+>;
+
+// Nested struct
+type _StructNested = Expect<
+	Equal<
+		Scalar<
+			d.StructType<
+				[
+					d.Field<"name", d.Utf8Type>,
+					d.Field<
+						"inner",
+						d.StructType<[d.Field<"val", d.IntType<32, true>>]>
+					>,
+				]
+			>,
+			{}
+		>,
+		{ name: string; inner: { val: number } }
+	>
+>;
+
+// -- Union — union of children's scalar types ---------------------------------
+
+type _UnionTyped = Expect<
+	Equal<
+		Scalar<
+			d.UnionType<
+				[d.Field<"a", d.IntType<32, true>>, d.Field<"b", d.Utf8Type>]
+			>,
+			{}
+		>,
+		number | string
+	>
+>;
+
+// -- RunEndEncoded — scalar of the values child -------------------------------
+
+type _RunEndEncoded = Expect<
+	Equal<
+		Scalar<
+			d.RunEndEncodedType<
+				d.Field<"run_ends", d.IntType<32, true>>,
+				d.Field<"values", d.Utf8Type>
+			>,
+			{}
+		>,
+		string
+	>
+>;
 
 // =============================================================================
 // 1e. Cross-cutting: options don't leak across types
@@ -470,7 +555,7 @@ type _CrossAllMap = Expect<
 			d.MapType,
 			{ useDate: true; useBigInt: true; useDecimalInt: true; useMap: true }
 		>,
-		Map<string, unknown>
+		Map<unknown, unknown>
 	>
 >;
 
