@@ -338,15 +338,18 @@ export function runEndEncoded(
 }
 
 /** Accept any of the given types. Validation passes if the column matches at least one. */
-export function either(entries: SchemaEntry[]): SchemaEntry {
+export function either<const E extends SchemaEntry[]>(
+  entries: E,
+): SchemaEntry<E[number] extends SchemaEntry<infer T> ? T : never> {
   return {
     match: { typeId: -999, options: entries },
-    nullable(): SchemaEntry<d.DataType, true> {
-      // Spread to create a new object; cast is safe because nullable()
-      // only changes the Nullable type parameter (phantom, no runtime data)
-      return { ...this } as unknown as SchemaEntry<d.DataType, true>;
+    nullable() {
+      return { ...this } as unknown as SchemaEntry<
+        E[number] extends SchemaEntry<infer T> ? T : never,
+        true
+      >;
     },
-  };
+  } as SchemaEntry<E[number] extends SchemaEntry<infer T> ? T : never>;
 }
 
 // =============================================================================

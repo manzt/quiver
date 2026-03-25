@@ -402,7 +402,7 @@ const eitherSchema = q.table({
 type EitherTable = q.infer<typeof eitherSchema>;
 declare const et: EitherTable;
 const eitherRow = et.at(0);
-//    ^? { val: any; label: string | null; }
+//    ^? { val: number; label: string | null; }
 
 // list — should be { tags: Array<string>; scores: Int32Array; ... }
 const listSchema = q.table({
