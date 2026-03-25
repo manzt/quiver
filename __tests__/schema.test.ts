@@ -5,7 +5,7 @@
  * because the builders and assertSchema don't exist yet.
  */
 
-import { assertEquals, assertInstanceOf, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertInstanceOf, assertThrows } from "@std/assert";
 import * as f from "@uwdata/flechette";
 import * as q from "../src/mod.ts";
 

@@ -84,7 +84,8 @@ carrying `code`, `path`, `expected`, and `received`. `flatten()` returns
 ## Tests
 
 ```sh
-deno fmt --check        # formatting
+deno fmt                # formatting
+deno lint               # linting
 deno check              # compile-time type assertions
 deno test               # runtime behavior + schema validation tests
 ```

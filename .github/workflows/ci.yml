@@ -6,15 +6,22 @@ on:
   pull_request:
 
 jobs:
-  check:
+  Lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v2
+      - run: deno lint
       - run: deno fmt --check
+
+  Check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
       - run: deno check
 
-  test:
+  Test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

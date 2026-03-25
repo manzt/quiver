@@ -10,7 +10,7 @@
  * on extracted values.
  */
 
-import { assertEquals, assertInstanceOf, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertInstanceOf, assertThrows } from "@std/assert";
 import * as f from "@uwdata/flechette";
 
 /** Round-trip helper: build a table, encode to IPC, decode with options. */

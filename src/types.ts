@@ -111,6 +111,7 @@ export type Scalar<
       number,
       Options extends { useBigInt: infer UseBigInt } ? UseBigInt : false
     >
+  // deno-lint-ignore no-explicit-any
   : T extends d.RunEndEncodedType<any, infer Values>
     ? Scalar<Values["type"], Options>
   : never;

@@ -10,7 +10,7 @@
  * auto-transform.
  */
 
-import * as path from "jsr:@std/path";
+import * as path from "@std/path";
 
 // ---------------------------------------------------------------------------
 // 1. Locate flechette's .d.ts files
