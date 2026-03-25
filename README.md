@@ -1,76 +1,103 @@
-# quiver
+<h1>
+<p align="center">
+  🏹 quiver
+</h1>
+<p align="center">
+  a (type-safe) place for your arrows
+</p>
+</p>
 
-a safe place for your arrows
+**quiver** lets you define [Apache Arrow](https://arrow.apache.org)
+table schemas in TypeScript, validate Arrow IPC data against them at
+parse time, and get back fully typed tables. Think
+[zod](https://zod.dev) or [valibot](https://valibot.dev), but for
+Arrow.
 
-## install
+Built on [`@uwdata/flechette`](https://github.com/uwdata/flechette).
 
 ```
 npx jsr add @manzt/quiver
 ```
 
-## usage
-
 ```ts
 import * as q from "@manzt/quiver";
 
-type MyTable = q.infer<typeof myTableSchema>;
+let schema = q.table({
+  id: q.int32(),
+  name: q.utf8().nullable(),
+  score: q.float64(),
+}, { useDate: true });
 
-let myTableSchema = q.table({
-	num: q.union([q.int(), q.float()]),
-	str: q.string(),
-	bool: q.bool().nonNullable(),
-	date: q.union([q.dateDay(), q.dateMillisecond()]),
-}, {
-	useDate: true,
-	useBigInt: false,
-});
+let table = schema.parseIPC(bytes); // throws if schema doesn't match
+table.at(0).name  // string | null
+table.at(0).score // number
+```
+
+## usage
+
+Use `q.infer` to extract the table type from a schema and pass it
+around your code. Types flow through every operation — `getChild`,
+`select`, `toArray`, iteration. Change `useBigInt` or `useDate` and the
+types update.
+
+```ts
+let schema = q.table({
+  id: q.int32(),
+  name: q.utf8().nullable(),
+  score: q.float64(),
+  created: q.dateDay(),
+}, { useDate: true });
+
+type MyTable = q.infer<typeof schema>;
 
 function processTable(table: MyTable) {
-	// strongly typed!
-
-	let arr = table.toArray();
-	// Array<{num: number|null, str: string|null, bool: boolean, date: Date|null}>
-
-	for (let row of table) {
-		row; // {num: number|null, str: string|null, bool: boolean, date: Date|null}
-	}
-
-	let cols = table.toColumns();
-	// {
-	//   num: Column<IntType | FloatType, number>,
-	//   str: Column<StringType, string>,
-	//   bool: Column<BoolType, boolean>,
-	//   date: Column<DateType, Date>
-	// }
-
-	let subTable = table.select(["num", "str"]);
-	// Table<[
-	//  { name: "num", type: IntType | FloatType },
-	//  { name: "str", type: StringType }
-	// ], {
-	//   useDate: true,
-	//   useBigInt: false
-	// }>
+  for (let row of table) {
+    row.id      // number
+    row.name    // string | null
+    row.created // Date (because useDate: true)
+  }
 }
 
-// fetch Arrow data
 let response = await fetch("https://example.com/data.arrow");
 let bytes = new Uint8Array(await response.arrayBuffer());
 
-// parse with table schema
-let table = tableSchema.parseIPC(bytes); // throws if parsing fails!
-processTable(table); // All good!
-processTable(table.select(["num", "str"])); // Error! Missing "bool" and "date"
+processTable(schema.parseIPC(bytes));
 ```
 
-## what & why
+## recipes
 
-**quiver** is a TypeScript library providing high-level type definitions for
-Apache Arrow tables, built on
-[`@uwdata/flechette`](https://github.com/uwdata/flechette).
+```ts
+// Specific types
+q.table({ id: q.int32(), lat: q.float64() })
 
-It allows you to define table schemas with rich types (similar to Zod for
-JavaScript objects), enhancing type information for parsed tables. This enables
-type-safe operations on tables, catching errors early in your application.
-**quiver** accurately types Arrow data representations in JavaScript,
-propagating `@uwdata/flechette` parser options to the Table type.
+// Flexible — accept any variant
+q.table({ num: q.int(), text: q.string(), day: q.date() })
+
+// Accept alternatives
+q.table({ value: q.of([q.int32(), q.float64()]) })
+
+// Ordered columns (tuple form) — getChildAt knows exact types
+q.table([["id", q.int32()], ["name", q.utf8()]])
+
+// Nested
+q.table({
+  tags: q.list(q.utf8()),
+  meta: q.struct({ key: q.utf8(), count: q.int32() }),
+  category: q.dictionary(q.utf8()),
+})
+```
+
+## how it works
+
+Builders return phantom schema entries — no runtime data, just match
+criteria and a type-level generic. `parseIPC` calls flechette's
+`tableFromIPC`, validates the Arrow schema against your declared types,
+and returns the flechette table with quiver's generics overlaid.
+
+Types map every `DataType + ExtractionOptions` to the JS type flechette
+actually returns: `number`, `bigint`, `Date`, `Int32Array`, `{ field:
+type }` for structs, etc. Options propagate through nested types.
+
+## versioning
+
+Tracks flechette — quiver `2.3.x` targets flechette `2.3.x`.
