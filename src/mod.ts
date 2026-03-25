@@ -326,22 +326,198 @@ export function of(entries: SchemaEntry[]) {
 }
 
 // =============================================================================
-// assertSchema — runtime validation
+// QuiverError — structured schema validation errors (zod-compatible shape)
 // =============================================================================
 
-function matchesType(
-	match: TypeMatcher,
-	actual: f.DataType,
-): boolean {
-	// either() — try each option
-	if ((match as any).options) {
-		const options = (match as any).options as SchemaEntry[];
-		return options.some((e) => matchesType(e.match, actual));
+export type QuiverIssueCode =
+	| "column-count"
+	| "column-missing"
+	| "type-mismatch";
+
+export interface QuiverIssue {
+	code: QuiverIssueCode;
+	path: string[];
+	message: string;
+	expected?: string;
+	received?: string;
+}
+
+export class QuiverError extends Error {
+	issues: QuiverIssue[];
+
+	constructor(issues: QuiverIssue[]) {
+		super();
+		this.issues = issues;
+		this.message = this.issues.map((i) => {
+			const loc = i.path.length > 0 ? i.path.join(".") + ": " : "";
+			return loc + i.message;
+		}).join("\n");
+		this.name = "QuiverError";
 	}
 
-	// typeId can be a number or array of numbers
+	/** Flat error summary matching zod's flatten() shape. */
+	flatten(): {
+		formErrors: string[];
+		fieldErrors: Record<string, string[]>;
+	} {
+		const formErrors: string[] = [];
+		const fieldErrors: Record<string, string[]> = {};
+		for (const issue of this.issues) {
+			if (issue.path.length > 0) {
+				const key = issue.path[0];
+				fieldErrors[key] = fieldErrors[key] || [];
+				fieldErrors[key].push(issue.message);
+			} else {
+				formErrors.push(issue.message);
+			}
+		}
+		return { formErrors, fieldErrors };
+	}
+}
+
+// =============================================================================
+// assertSchema — runtime validation, collects all issues
+// =============================================================================
+
+function describeType(type: f.DataType): string {
+	const t = type as Record<string, unknown>;
+	switch (type.typeId) {
+		case 2:
+			return `Int(${t.bitWidth}, ${t.signed ? "signed" : "unsigned"})`;
+		case 3:
+			return `Float(precision=${t.precision})`;
+		case 7:
+			return `Decimal(${t.precision}, ${t.scale}, bitWidth=${t.bitWidth})`;
+		case 8:
+			return `Date(unit=${t.unit})`;
+		case 9:
+			return `Time(bitWidth=${t.bitWidth}, unit=${t.unit})`;
+		case 10:
+			return `Timestamp(unit=${t.unit}, tz=${t.timezone})`;
+		case 11:
+			return `Interval(unit=${t.unit})`;
+		case 12:
+			return "List";
+		case 13:
+			return "Struct";
+		case 14:
+			return "Union";
+		case 17:
+			return "Map";
+		case 18:
+			return `Duration(unit=${t.unit})`;
+		case -1:
+			return "Dictionary";
+		default: {
+			const names: Record<number, string> = {
+				0: "None",
+				1: "Null",
+				4: "Binary",
+				5: "Utf8",
+				6: "Bool",
+				15: "FixedSizeBinary",
+				16: "FixedSizeList",
+				19: "LargeBinary",
+				20: "LargeUtf8",
+				21: "LargeList",
+				22: "RunEndEncoded",
+				23: "BinaryView",
+				24: "Utf8View",
+				25: "ListView",
+				26: "LargeListView",
+			};
+			return names[type.typeId] ?? `Unknown(typeId=${type.typeId})`;
+		}
+	}
+}
+
+function describeMatcher(match: TypeMatcher): string {
+	if ((match as any).options) {
+		const options = (match as any).options as SchemaEntry[];
+		return options.map((e) => describeMatcher(e.match)).join(" | ");
+	}
 	const typeIds = Array.isArray(match.typeId) ? match.typeId : [match.typeId];
-	if (!typeIds.includes(actual.typeId)) return false;
+	const parts: string[] = [];
+	for (const [key, val] of Object.entries(match)) {
+		if (key === "typeId" || key === "children" || key === "dictionary") {
+			continue;
+		}
+		parts.push(`${key}=${val}`);
+	}
+	const names: Record<number, string> = {
+		0: "None",
+		1: "Null",
+		2: "Int",
+		3: "Float",
+		4: "Binary",
+		5: "Utf8",
+		6: "Bool",
+		7: "Decimal",
+		8: "Date",
+		9: "Time",
+		10: "Timestamp",
+		11: "Interval",
+		12: "List",
+		13: "Struct",
+		14: "Union",
+		15: "FixedSizeBinary",
+		16: "FixedSizeList",
+		17: "Map",
+		18: "Duration",
+		19: "LargeBinary",
+		20: "LargeUtf8",
+		21: "LargeList",
+		22: "RunEndEncoded",
+		23: "BinaryView",
+		24: "Utf8View",
+		25: "ListView",
+		26: "LargeListView",
+		[-1]: "Dictionary",
+	};
+	const typeNames = typeIds.map((id) => names[id] ?? `typeId=${id}`);
+	const typePart = typeNames.length === 1
+		? typeNames[0]
+		: typeNames.join(" | ");
+	return parts.length > 0 ? `${typePart}(${parts.join(", ")})` : typePart;
+}
+
+function collectTypeIssues(
+	match: TypeMatcher,
+	actual: f.DataType,
+	path: string[],
+	issues: QuiverIssue[],
+): void {
+	// of() — try each option
+	if ((match as any).options) {
+		const options = (match as any).options as SchemaEntry[];
+		if (!options.some((e) => matchesType(e.match, actual))) {
+			issues.push({
+				code: "type-mismatch",
+				path,
+				message: `Expected ${describeMatcher(match)}, received ${
+					describeType(actual)
+				}`,
+				expected: describeMatcher(match),
+				received: describeType(actual),
+			});
+		}
+		return;
+	}
+
+	// typeId check
+	const typeIds = Array.isArray(match.typeId) ? match.typeId : [match.typeId];
+	if (!typeIds.includes(actual.typeId)) {
+		issues.push({
+			code: "type-mismatch",
+			path,
+			message: `Expected ${describeMatcher(match)}, received ${
+				describeType(actual)
+			}`,
+			expected: describeMatcher(match),
+			received: describeType(actual),
+		});
+		return;
+	}
 
 	// Check additional properties
 	for (const [key, expected] of Object.entries(match)) {
@@ -350,11 +526,16 @@ function matchesType(
 		// Nested children for list types
 		if (key === "children" && Array.isArray(expected)) {
 			const actualChildren = (actual as any).children;
-			if (!actualChildren) return false;
+			if (!actualChildren) continue;
 			for (let i = 0; i < expected.length; i++) {
 				const childEntry = expected[i] as SchemaEntry;
-				if (!matchesType(childEntry.match, actualChildren[i]?.type)) {
-					return false;
+				if (actualChildren[i]?.type) {
+					collectTypeIssues(
+						childEntry.match,
+						actualChildren[i].type,
+						[...path, actualChildren[i].name ?? String(i)],
+						issues,
+					);
 				}
 			}
 			continue;
@@ -366,16 +547,26 @@ function matchesType(
 			!Array.isArray(expected)
 		) {
 			const actualChildren = (actual as any).children as f.Field[];
-			if (!actualChildren) return false;
-			const entries = Object.entries(
-				expected as Record<string, SchemaEntry>,
-			);
-			if (entries.length !== actualChildren.length) return false;
-			for (const [name, childEntry] of entries) {
+			if (!actualChildren) continue;
+			for (
+				const [name, childEntry] of Object.entries(
+					expected as Record<string, SchemaEntry>,
+				)
+			) {
 				const actualChild = actualChildren.find((c) => c.name === name);
-				if (!actualChild) return false;
-				if (!matchesType(childEntry.match, actualChild.type)) {
-					return false;
+				if (!actualChild) {
+					issues.push({
+						code: "column-missing",
+						path: [...path, name],
+						message: `Struct field "${name}" not found`,
+					});
+				} else {
+					collectTypeIssues(
+						childEntry.match,
+						actualChild.type,
+						[...path, name],
+						issues,
+					);
 				}
 			}
 			continue;
@@ -385,48 +576,94 @@ function matchesType(
 		if (key === "dictionary" && typeof expected === "object") {
 			const dictEntry = expected as SchemaEntry;
 			const actualDict = (actual as any).dictionary;
-			if (!actualDict) return false;
-			if (!matchesType(dictEntry.match, actualDict)) return false;
+			if (actualDict) {
+				collectTypeIssues(
+					dictEntry.match,
+					actualDict,
+					[...path, "dictionary"],
+					issues,
+				);
+			}
 			continue;
 		}
 
-		// Simple property comparison
-		if ((actual as any)[key] !== expected) return false;
-	}
+		// Map children — special structure { key, value }
+		if (
+			key === "children" && Array.isArray(expected) &&
+			expected.length === 1 && (expected[0] as any).key
+		) {
+			continue; // map children handled by typeId match
+		}
 
-	return true;
+		// Simple property comparison
+		if ((actual as any)[key] !== expected) {
+			issues.push({
+				code: "type-mismatch",
+				path,
+				message: `Expected ${key}=${expected}, received ${key}=${
+					(actual as any)[key]
+				}`,
+				expected: String(expected),
+				received: String((actual as any)[key]),
+			});
+		}
+	}
 }
 
+/** Simple boolean check (used by of() internally). */
+function matchesType(
+	match: TypeMatcher,
+	actual: f.DataType,
+): boolean {
+	const issues: QuiverIssue[] = [];
+	collectTypeIssues(match, actual, [], issues);
+	return issues.length === 0;
+}
+
+/**
+ * Validate a parsed schema against declared entries.
+ * strict=true (tuple form): exact column count required
+ * strict=false (record form): partial — only declared columns checked
+ */
 function assertSchema(
 	declared: Record<string, SchemaEntry>,
 	actual: f.Schema,
+	strict: boolean,
 ) {
+	const issues: QuiverIssue[] = [];
 	const declaredNames = Object.keys(declared);
 	const actualNames = actual.fields.map((f) => f.name);
 
-	if (declaredNames.length !== actualNames.length) {
-		throw new Error(
-			`Schema mismatch: expected ${declaredNames.length} columns (${
+	if (strict && declaredNames.length !== actualNames.length) {
+		issues.push({
+			code: "column-count",
+			path: [],
+			message: `Expected ${declaredNames.length} columns (${
 				declaredNames.join(", ")
 			}), got ${actualNames.length} (${actualNames.join(", ")})`,
-		);
+			expected: String(declaredNames.length),
+			received: String(actualNames.length),
+		});
 	}
 
 	for (const name of declaredNames) {
 		const actualField = actual.fields.find((f) => f.name === name);
 		if (!actualField) {
-			throw new Error(
-				`Schema mismatch: column "${name}" not found. Got: ${
+			issues.push({
+				code: "column-missing",
+				path: [name],
+				message: `Column "${name}" not found in table. Available: ${
 					actualNames.join(", ")
 				}`,
-			);
+			});
+			continue;
 		}
 
-		if (!matchesType(declared[name].match, actualField.type)) {
-			throw new Error(
-				`Schema mismatch: column "${name}" type mismatch`,
-			);
-		}
+		collectTypeIssues(declared[name].match, actualField.type, [name], issues);
+	}
+
+	if (issues.length > 0) {
+		throw new QuiverError(issues);
 	}
 }
 
@@ -462,7 +699,8 @@ type TupleToFields<
 // table() — accepts tuple or record form, validates on parse
 // =============================================================================
 
-// Tuple form: ordered fields
+// Tuple form: strict — exact column count and order required.
+// getChildAt(i) returns the exact column type at that index.
 export function table<
 	const Entries extends ReadonlyArray<readonly [string, SchemaEntry]>,
 	const Options extends f.ExtractionOptions = {},
@@ -475,7 +713,11 @@ export function table<
 	>;
 };
 
-// Record form: unordered fields
+// Record form: partial — only declared columns are validated, extra
+// columns in the table are ignored. Use getChild("name") for typed
+// column access. getChildAt(i) is UNSAFE here: the index may refer to
+// a column that wasn't declared or validated, but the type system will
+// still claim it's one of the declared types.
 export function table<
 	const Entries extends Record<string, SchemaEntry>,
 	const Options extends f.ExtractionOptions = {},
@@ -491,9 +733,10 @@ export function table(
 		| Record<string, SchemaEntry>,
 	options: f.ExtractionOptions = {},
 ) {
-	// Normalize tuple form to record for assertSchema
+	// Tuple form is strict (exact columns), record form is partial
+	const strict = Array.isArray(entries);
 	let record: Record<string, SchemaEntry>;
-	if (Array.isArray(entries)) {
+	if (strict) {
 		record = {};
 		for (const [name, entry] of entries) {
 			record[name] = entry;
@@ -505,7 +748,7 @@ export function table(
 	return {
 		parseIPC(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>) {
 			const table = f.tableFromIPC(ipc, options);
-			assertSchema(record, table.schema);
+			assertSchema(record, table.schema, strict);
 			return table as any;
 		},
 	};

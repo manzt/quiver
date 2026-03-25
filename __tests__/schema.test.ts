@@ -5,7 +5,7 @@
  * because the builders and assertSchema don't exist yet.
  */
 
-import { assertEquals, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertInstanceOf, assertThrows } from "jsr:@std/assert";
 import * as f from "@uwdata/flechette";
 import * as q from "../src/mod.ts";
 
@@ -371,18 +371,34 @@ Deno.test("parseIPC throws when column name doesn't match", () => {
 	assertThrows(() => schema.parseIPC(ipc));
 });
 
-Deno.test("parseIPC throws when table has extra columns", () => {
+Deno.test("record form: allows extra columns (partial schema)", () => {
 	const ipc = toIPC(
 		[["a", [1]], ["b", [2]]],
 		{ a: f.int32(), b: f.int32() },
 	);
 	const schema = q.table({ a: q.int32() });
+	const table = schema.parseIPC(ipc);
+	assertEquals(table.numRows, 1);
+});
+
+Deno.test("record form: still throws when declared column is missing", () => {
+	const ipc = toIPC([["a", [1]]], { a: f.int32() });
+	const schema = q.table({ a: q.int32(), b: q.utf8() });
 	assertThrows(() => schema.parseIPC(ipc));
 });
 
-Deno.test("parseIPC throws when table is missing columns", () => {
+Deno.test("tuple form: throws when table has extra columns", () => {
+	const ipc = toIPC(
+		[["a", [1]], ["b", [2]]],
+		{ a: f.int32(), b: f.int32() },
+	);
+	const schema = q.table([["a", q.int32()]]);
+	assertThrows(() => schema.parseIPC(ipc));
+});
+
+Deno.test("tuple form: throws when table is missing columns", () => {
 	const ipc = toIPC([["a", [1]]], { a: f.int32() });
-	const schema = q.table({ a: q.int32(), b: q.utf8() });
+	const schema = q.table([["a", q.int32()], ["b", q.utf8()]]);
 	assertThrows(() => schema.parseIPC(ipc));
 });
 
@@ -560,30 +576,105 @@ Deno.test("dictionary value type mismatch throws", () => {
 	assertThrows(() => schema.parseIPC(ipc));
 });
 
-Deno.test("error message includes column name on type mismatch", () => {
+Deno.test("QuiverError: type mismatch has path and expected/received", () => {
 	const ipc = toIPC([["myCol", [1]]], { myCol: f.int32() });
 	const schema = q.table({ myCol: q.utf8() });
 	try {
 		schema.parseIPC(ipc);
 		throw new Error("should have thrown");
 	} catch (e) {
-		assertEquals((e as Error).message.includes("myCol"), true);
+		assertInstanceOf(e, q.QuiverError);
+		assertEquals(e.issues.length, 1);
+		assertEquals(e.issues[0].code, "type-mismatch");
+		assertEquals(e.issues[0].path, ["myCol"]);
+		assertEquals(e.issues[0].expected, "Utf8");
+		assertEquals(e.issues[0].received, "Int(32, signed)");
 	}
 });
 
-Deno.test("error message includes column names on count mismatch", () => {
+Deno.test("QuiverError: column count mismatch (tuple form)", () => {
 	const ipc = toIPC(
 		[["a", [1]], ["b", [2]]],
 		{ a: f.int32(), b: f.int32() },
 	);
-	const schema = q.table({ a: q.int32() });
+	const schema = q.table([["a", q.int32()]]);
 	try {
 		schema.parseIPC(ipc);
 		throw new Error("should have thrown");
 	} catch (e) {
-		const msg = (e as Error).message;
-		assertEquals(msg.includes("1"), true); // expected count
-		assertEquals(msg.includes("2"), true); // actual count
+		assertInstanceOf(e, q.QuiverError);
+		const countIssue = e.issues.find((i: q.QuiverIssue) =>
+			i.code === "column-count"
+		);
+		assertEquals(countIssue?.path, []);
+		assertEquals(countIssue?.expected, "1");
+		assertEquals(countIssue?.received, "2");
+	}
+});
+
+Deno.test("QuiverError: missing column", () => {
+	const ipc = toIPC([["x", [1]]], { x: f.int32() });
+	const schema = q.table({ y: q.int32() });
+	try {
+		schema.parseIPC(ipc);
+		throw new Error("should have thrown");
+	} catch (e) {
+		assertInstanceOf(e, q.QuiverError);
+		const missing = e.issues.find((i: q.QuiverIssue) =>
+			i.code === "column-missing"
+		);
+		assertEquals(missing?.path, ["y"]);
+	}
+});
+
+Deno.test("QuiverError: nested struct field mismatch has deep path", () => {
+	const ipc = toIPC(
+		[["meta", [{ key: 1 }]]],
+		{ meta: f.struct({ key: f.int32() }) },
+	);
+	const schema = q.table({ meta: q.struct({ key: q.utf8() }) });
+	try {
+		schema.parseIPC(ipc);
+		throw new Error("should have thrown");
+	} catch (e) {
+		assertInstanceOf(e, q.QuiverError);
+		assertEquals(e.issues[0].path, ["meta", "key"]);
+		assertEquals(e.issues[0].code, "type-mismatch");
+	}
+});
+
+Deno.test("QuiverError: flatten() matches zod shape", () => {
+	const ipc = toIPC(
+		[["a", [1]], ["b", ["x"]]],
+		{ a: f.int32(), b: f.utf8() },
+	);
+	const schema = q.table({ a: q.utf8(), b: q.int32() });
+	try {
+		schema.parseIPC(ipc);
+		throw new Error("should have thrown");
+	} catch (e) {
+		assertInstanceOf(e, q.QuiverError);
+		const flat = e.flatten();
+		assertEquals(flat.formErrors.length, 0);
+		assertEquals("a" in flat.fieldErrors, true);
+		assertEquals("b" in flat.fieldErrors, true);
+		assertEquals(flat.fieldErrors["a"].length, 1);
+		assertEquals(flat.fieldErrors["b"].length, 1);
+	}
+});
+
+Deno.test("QuiverError: collects multiple issues at once", () => {
+	const ipc = toIPC(
+		[["a", [1]], ["b", ["x"]], ["c", [true]]],
+		{ a: f.int32(), b: f.utf8(), c: f.bool() },
+	);
+	const schema = q.table({ a: q.utf8(), b: q.int32(), c: q.float64() });
+	try {
+		schema.parseIPC(ipc);
+		throw new Error("should have thrown");
+	} catch (e) {
+		assertInstanceOf(e, q.QuiverError);
+		assertEquals(e.issues.length, 3);
 	}
 });
 
