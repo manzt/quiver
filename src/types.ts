@@ -36,7 +36,7 @@ export type Scalar<
   : T extends d.Utf8Type | d.LargeUtf8Type | d.Utf8ViewType ? string
   : T extends d.BoolType ? boolean
   : T extends d.DecimalType<infer BW>
-    // 32-bit decimals stay number even with useDecimalInt; 64-bit+ become bigint
+  // 32-bit decimals stay number even with useDecimalInt; 64-bit+ become bigint
     ? BW extends 32 ? number
     : ResolveExtractionOption<
       bigint,
@@ -176,8 +176,7 @@ type TypedArrayFor<
   : T extends d.DurationType
     ? Options extends { useBigInt: true } ? BigInt64Array : Float64Array
   : T extends d.DecimalType<infer BW>
-    ? Options extends { useDecimalInt: true }
-      ? BW extends 32 ? Int32Array // 32-bit stays number → Int32Array
+    ? Options extends { useDecimalInt: true } ? BW extends 32 ? Int32Array // 32-bit stays number → Int32Array
       : never // 64-bit+ becomes bigint → Array
     : Float64Array
   : never;

@@ -7,6 +7,10 @@
   "test": {
     "exclude": ["__tests__/snap.test.ts"]
   },
+  "tasks": {
+    "test": "deno test && deno run -A vitest run __tests__/snap.test.ts && deno run -A scripts/snap.ts __tests__/snap.test.ts",
+    "test:update": "deno run -A vitest run __tests__/snap.test.ts --update && deno run -A scripts/snap.ts --update __tests__/snap.test.ts"
+  },
   "lint": {
     "rules": {
       "exclude": ["ban-types", "no-explicit-any"]
