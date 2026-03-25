@@ -422,7 +422,7 @@ const structSchema = q.table({
 type StructTable = q.infer<typeof structSchema>;
 declare const st: StructTable;
 const structRow = st.at(0);
-//    ^? { meta: { [x: string]: any; }; }
+//    ^? { meta: { key: string; count: number; }; }
 
 // dictionary — should be { category: string; code: number; }
 const dictSchema = q.table({
@@ -450,7 +450,7 @@ const structOptsSchema = q.table({
 type StructOptsTable = q.infer<typeof structOptsSchema>;
 declare const sot: StructOptsTable;
 const structOptsRow = sot.at(0);
-//    ^? { s: { [x: string]: any; }; }
+//    ^? { s: { val: bigint; }; }
 
 // list with useBigInt — should propagate to child
 const listOptsSchema = q.table({
@@ -468,7 +468,7 @@ const deepStruct = q.table({
 type DeepStructTable = q.infer<typeof deepStruct>;
 declare const dst: DeepStructTable;
 const deepStructRow = dst.at(0);
-//    ^? { outer: { [x: string]: any; }; }
+//    ^? { outer: { inner: { x: number; }; }; }
 
 // map — should be { kv: Array<[string, number]>; }
 const mapSchema = q.table({

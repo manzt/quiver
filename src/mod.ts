@@ -317,9 +317,22 @@ export function fixedSizeList<T extends d.DataType>(
   return schema({ typeId: 16, stride, children: [child] });
 }
 /** Struct (object). Scalar: `{ [name]: value }` with option propagation through children. */
-export function struct(
-  children: Record<string, SchemaEntry>,
-): SchemaEntry<d.StructType> {
+export function struct<
+  const C extends Record<string, SchemaEntry>,
+>(
+  children: C,
+): SchemaEntry<
+  d.StructType<
+    Array<
+      {
+        [K in keyof C & string]: d.Field<
+          K,
+          C[K] extends SchemaEntry<infer T> ? T : never
+        >;
+      }[keyof C & string]
+    >
+  >
+> {
   return schema({ typeId: 13, children });
 }
 /** Key-value map. Scalar: `Array<[K, V]>`, or `Map<K, V>` with `useMap`. */
