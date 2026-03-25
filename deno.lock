@@ -4,7 +4,6 @@
     "jsr:@std/assert@*": "1.0.13",
     "jsr:@std/internal@^1.0.6": "1.0.6",
     "jsr:@std/path@*": "1.0.9",
-    "npm:@uwdata/flechette@*": "2.3.0",
     "npm:@uwdata/flechette@^2.3.0": "2.3.0"
   },
   "jsr": {

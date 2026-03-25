@@ -208,6 +208,47 @@ export function fixedSizeBinary(stride: number) {
 }
 
 // =============================================================================
+// JS-type builders — match by JS scalar type
+// =============================================================================
+
+export const js = {
+	/** Matches any Int or Float column. Scalar: `number`. */
+	number: () => schema<d.IntType | d.FloatType>({ typeId: [2, 3] }),
+	/**
+	 * Matches any 64-bit Int column (int64, uint64). Scalar: `bigint`.
+	 *
+	 * Requires `{ useBigInt: true }` in table options — without it values
+	 * are returned as `number` and may lose precision beyond 2^53.
+	 */
+	bigint: () => schema<d.IntType<64>>({ typeId: 2, bitWidth: 64 }),
+	/** Matches any string column (Utf8, LargeUtf8, Utf8View). Scalar: `string`. */
+	string: () =>
+		schema<d.Utf8Type | d.LargeUtf8Type | d.Utf8ViewType>({
+			typeId: [5, 20, 24],
+		}),
+	/** Matches a Bool column. Scalar: `boolean`. */
+	boolean: () => schema<d.BoolType>({ typeId: 6 }),
+	/** Matches any binary column (Binary, LargeBinary, BinaryView, FixedSizeBinary). Scalar: `Uint8Array`. */
+	bytes: () =>
+		schema<
+			| d.BinaryType
+			| d.LargeBinaryType
+			| d.BinaryViewType
+			| d.FixedSizeBinaryType
+		>({ typeId: [4, 19, 23, 15] }),
+	/**
+	 * Matches any date-like column (Date, Timestamp, Interval). Scalar: `Date`.
+	 *
+	 * Requires `{ useDate: true }` in table options — without it values
+	 * are returned as `number` (epoch milliseconds).
+	 */
+	date: () =>
+		schema<d.DateType | d.TimestampType | d.IntervalType>({
+			typeId: [8, 10, 11],
+		}),
+};
+
+// =============================================================================
 // Broad builders — match any variant of a type family
 // =============================================================================
 

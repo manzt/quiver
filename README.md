@@ -62,27 +62,65 @@ let bytes = new Uint8Array(await response.arrayBuffer());
 processTable(schema.parseIPC(bytes));
 ```
 
-## recipes
+## builders
+
+Quiver provides three tiers of schema builders. Choose the level of strictness
+that matches your trust in the producer:
 
 ```ts
-// Specific types
-q.table({ id: q.int32(), lat: q.float64() });
+// JS-level — "I care about the JS type I get back"
+q.js.number()   // → number
+q.js.bigint()   // → bigint  (requires useBigInt)
+q.js.string()   // → string
+q.js.boolean()  // → boolean
+q.js.bytes()    // → Uint8Array
+q.js.date()     // → Date    (requires useDate)
 
-// Flexible — accept any variant
-q.table({ num: q.int(), text: q.string(), day: q.date() });
+// Arrow-level — "I care about the Arrow type family"
+q.int()          q.float()        q.date()
+q.time()         q.string()
 
+// Arrow-specific — "I care about the exact wire type"
+q.int32()        q.float64()      q.utf8()
+q.dateDay()      q.timeSecond()   // ...
+```
+
+These compose with the rest of the API:
+
+```ts
 // Accept alternatives
 q.table({ value: q.of([q.int32(), q.float64()]) });
 
 // Ordered columns (tuple form) — getChildAt knows exact types
 q.table([["id", q.int32()], ["name", q.utf8()]]);
 
-// Nested
+// Nested types
 q.table({
 	tags: q.list(q.utf8()),
 	meta: q.struct({ key: q.utf8(), count: q.int32() }),
 	category: q.dictionary(q.utf8()),
 });
+```
+
+## what gets narrowed
+
+Builders narrow both the scalar type (`.at(i)`) and the array type
+(`.toArray()`). Stricter builders give tighter types:
+
+```ts
+let loose = q.table({ value: q.js.number() });
+let table = loose.parseIPC(bytes);
+let col = table.getChild("value");
+
+col.at(0); // number
+col.toArray(); // Int8Array | Int16Array | ... | Float64Array
+
+let strict = q.table({ value: q.float64() });
+let table = strict.parseIPC(bytes);
+let col = table.getChild("value");
+
+col.at(0); // number
+col.toArray(); // Float64Array
 ```
 
 ## how it works
