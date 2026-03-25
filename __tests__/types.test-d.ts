@@ -17,7 +17,7 @@
 
 // deno-lint-ignore-file no-unused-vars
 
-import type { Scalar } from "../src/jsvalue.ts";
+import type { Scalar, ValueArray } from "../src/types.ts";
 import type * as d from "../src/data-types.ts";
 import type { Equal, Expect } from "./test-utils.ts";
 
@@ -491,6 +491,79 @@ type _ListInt64Option = Expect<
 		BigInt64Array
 	>
 >;
+
+// =============================================================================
+// 2. ValueArray — what column.toArray() returns
+// =============================================================================
+
+// Non-nullable numerics → typed array
+type _VA_Int32 = Expect<
+	Equal<ValueArray<d.IntType<32, true>, {}, false>, Int32Array>
+>;
+type _VA_Float64 = Expect<
+	Equal<ValueArray<d.FloatType<2>, {}, false>, Float64Array>
+>;
+type _VA_Int64BigInt = Expect<
+	Equal<
+		ValueArray<d.IntType<64, true>, { useBigInt: true }, false>,
+		BigInt64Array
+	>
+>;
+
+// Non-nullable non-numerics → Array
+type _VA_Utf8 = Expect<
+	Equal<ValueArray<d.Utf8Type, {}, false>, Array<string>>
+>;
+type _VA_Bool = Expect<
+	Equal<ValueArray<d.BoolType, {}, false>, Array<boolean>>
+>;
+
+// Nullable numerics → typed array | Array<scalar | null>
+// (depends on whether nulls are actually present at runtime)
+type _VA_NullableInt32 = Expect<
+	Equal<
+		ValueArray<d.IntType<32, true>, {}, true>,
+		Int32Array | Array<number | null>
+	>
+>;
+type _VA_NullableFloat64 = Expect<
+	Equal<
+		ValueArray<d.FloatType<2>, {}, true>,
+		Float64Array | Array<number | null>
+	>
+>;
+type _VA_NullableInt64BigInt = Expect<
+	Equal<
+		ValueArray<d.IntType<64, true>, { useBigInt: true }, true>,
+		BigInt64Array | Array<bigint | null>
+	>
+>;
+
+// Nullable non-numerics → Array<scalar | null> (no typed array possible)
+type _VA_NullableUtf8 = Expect<
+	Equal<ValueArray<d.Utf8Type, {}, true>, Array<string | null>>
+>;
+type _VA_NullableBool = Expect<
+	Equal<ValueArray<d.BoolType, {}, true>, Array<boolean | null>>
+>;
+
+// Date with useDate → no typed array (Date can't be in TypedArray)
+type _VA_DateUseDate = Expect<
+	Equal<ValueArray<d.DateType, { useDate: true }, false>, Array<Date>>
+>;
+type _VA_DateDefault = Expect<
+	Equal<ValueArray<d.DateType, {}, false>, Float64Array>
+>;
+type _VA_NullableDateUseDate = Expect<
+	Equal<
+		ValueArray<d.DateType, { useDate: true }, true>,
+		Array<Date | null>
+	>
+>;
+
+// =============================================================================
+// Cross-cutting continued
+// =============================================================================
 
 // Dictionary propagates options through unwrap
 type _DictListStr = Expect<

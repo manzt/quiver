@@ -150,15 +150,20 @@ type TypedArrayFor<
 // ValueArray — what column.toArray() returns.
 //
 // Key behavior verified empirically:
-//   - Nullable columns ALWAYS return Array (nulls break typed array zero-copy)
-//   - Non-nullable numeric columns return their TypedArray
-//   - Non-numeric columns always return Array
+//   - nullCount > 0  → toArray() returns Array<Scalar | null>
+//   - nullCount === 0 → toArray() returns TypedArray (for numeric types)
+//   - Non-numeric types always return Array
+//
+// For nullable columns, we don't know at compile time whether nulls are
+// present, so the type is the union of both possibilities.
 // =============================================================================
 
 export type ValueArray<
 	D extends d.DataType,
 	Options extends f.ExtractionOptions,
 	Nullable extends boolean = false,
-> = Nullable extends true ? Array<Scalar<D, Options> | null>
+> = Nullable extends true
+	? TypedArrayFor<D, Options> extends never ? Array<Scalar<D, Options> | null>
+	: TypedArrayFor<D, Options> | Array<Scalar<D, Options> | null>
 	: TypedArrayFor<D, Options> extends never ? Array<Scalar<D, Options>>
 	: TypedArrayFor<D, Options>;

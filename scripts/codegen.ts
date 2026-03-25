@@ -572,7 +572,7 @@ async function main() {
 
 import type { ExtractionOptions } from "@uwdata/flechette";
 import type { DataType, Field, Schema } from "./data-types.ts";
-import type { Scalar, ValueArray } from "./jsvalue.ts";
+import type { Scalar, ValueArray } from "./types.ts";
 
 type Prettify<T> = { [K in keyof T]: T[K] } & {};
 

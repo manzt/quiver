@@ -29,7 +29,6 @@ Deno.test("int8() produces IntType with bitWidth=8, signed=true", () => {
 	assertEquals(s.match.typeId, 2);
 	assertEquals(s.match.bitWidth, 8);
 	assertEquals(s.match.signed, true);
-	assertEquals(s.isNullable, false);
 });
 
 Deno.test("int16() produces IntType with bitWidth=16, signed=true", () => {
@@ -150,19 +149,7 @@ Deno.test("largeBinary() produces LargeBinaryType", () => {
 // 2. Nullable chaining
 // =============================================================================
 
-Deno.test("builders default to isNullable=false", () => {
-	assertEquals(q.int32().isNullable, false);
-	assertEquals(q.utf8().isNullable, false);
-	assertEquals(q.bool().isNullable, false);
-	assertEquals(q.float64().isNullable, false);
-});
-
-Deno.test(".nullable() returns a new schema with isNullable=true", () => {
-	const s = q.int32().nullable();
-	assertEquals(s.isNullable, true);
-});
-
-Deno.test(".nullable() preserves the underlying type", () => {
+Deno.test(".nullable() preserves the match criteria", () => {
 	const base = q.int32();
 	const n = base.nullable();
 	assertEquals(n.match.typeId, base.match.typeId);
@@ -170,10 +157,10 @@ Deno.test(".nullable() preserves the underlying type", () => {
 	assertEquals(n.match.signed, base.match.signed);
 });
 
-Deno.test(".nullable() does not mutate the original", () => {
+Deno.test(".nullable() returns a new object", () => {
 	const s = q.utf8();
-	s.nullable();
-	assertEquals(s.isNullable, false);
+	const n = s.nullable();
+	assertEquals(s !== n as unknown, true);
 });
 
 // =============================================================================
@@ -395,26 +382,26 @@ Deno.test("q.date() accepts dateMillisecond column", () => {
 });
 
 // =============================================================================
-// 7. Either — schema-level "accept any of these"
+// 7. of — schema-level "accept any of these"
 // =============================================================================
 
-Deno.test("either([int32(), float64()]) accepts int32 column", () => {
+Deno.test("of([int32(), float64()]) accepts int32 column", () => {
 	const ipc = toIPC([["x", [1]]], { x: f.int32() });
-	const schema = q.table({ x: q.either([q.int32(), q.float64()]) });
+	const schema = q.table({ x: q.of([q.int32(), q.float64()]) });
 	const table = schema.parseIPC(ipc);
 	assertEquals(table.numRows, 1);
 });
 
-Deno.test("either([int32(), float64()]) accepts float64 column", () => {
+Deno.test("of([int32(), float64()]) accepts float64 column", () => {
 	const ipc = toIPC([["x", [1.0]]], { x: f.float64() });
-	const schema = q.table({ x: q.either([q.int32(), q.float64()]) });
+	const schema = q.table({ x: q.of([q.int32(), q.float64()]) });
 	const table = schema.parseIPC(ipc);
 	assertEquals(table.numRows, 1);
 });
 
-Deno.test("either([int32(), float64()]) rejects utf8 column", () => {
+Deno.test("of([int32(), float64()]) rejects utf8 column", () => {
 	const ipc = toIPC([["x", ["hi"]]], { x: f.utf8() });
-	const schema = q.table({ x: q.either([q.int32(), q.float64()]) });
+	const schema = q.table({ x: q.of([q.int32(), q.float64()]) });
 	assertThrows(() => schema.parseIPC(ipc));
 });
 

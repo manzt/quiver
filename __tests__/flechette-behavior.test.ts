@@ -594,6 +594,62 @@ Deno.test("nullable utf8 → null for null values", () => {
 });
 
 // =============================================================================
+// toArray() type depends on nullCount, not schema nullable flag
+// =============================================================================
+
+Deno.test("int32 toArray: Int32Array when no nulls", () => {
+	const t = roundTripTyped([["x", [1, 2, 3]]], { x: f.int32() });
+	const arr = t.getChild("x")!.toArray();
+	assertEquals(arr instanceof Int32Array, true);
+});
+
+Deno.test("int32 toArray: Array when nulls present", () => {
+	const t = roundTripTyped([["x", [1, null, 3]]], { x: f.int32() });
+	const arr = t.getChild("x")!.toArray();
+	assertEquals(Array.isArray(arr), true);
+});
+
+Deno.test("float64 toArray: Float64Array when no nulls", () => {
+	const t = roundTripTyped([["x", [1.1, 2.2]]], { x: f.float64() });
+	const arr = t.getChild("x")!.toArray();
+	assertEquals(arr instanceof Float64Array, true);
+});
+
+Deno.test("float64 toArray: Array when nulls present", () => {
+	const t = roundTripTyped([["x", [1.1, null]]], { x: f.float64() });
+	const arr = t.getChild("x")!.toArray();
+	assertEquals(Array.isArray(arr), true);
+});
+
+Deno.test("int64 toArray: BigInt64Array when no nulls + useBigInt", () => {
+	const t = roundTripTyped(
+		[["x", [1n, 2n]]],
+		{ x: f.int64() },
+		{ useBigInt: true },
+	);
+	const arr = t.getChild("x")!.toArray();
+	assertEquals(arr instanceof BigInt64Array, true);
+});
+
+Deno.test("int64 toArray: Array when nulls + useBigInt", () => {
+	const t = roundTripTyped(
+		[["x", [1n, null]]],
+		{ x: f.int64() },
+		{ useBigInt: true },
+	);
+	const arr = t.getChild("x")!.toArray();
+	assertEquals(Array.isArray(arr), true);
+});
+
+Deno.test("nullable field with zero nulls still returns typed array", () => {
+	// field.nullable=true but nullCount=0 → still get typed array
+	const t = roundTripTyped([["x", [1, 2, 3]]], { x: f.int32() });
+	assertEquals(t.schema.fields[0].nullable, true); // schema says nullable
+	assertEquals(t.getChild("x")!.nullCount, 0); // but no actual nulls
+	assertEquals(t.getChild("x")!.toArray() instanceof Int32Array, true);
+});
+
+// =============================================================================
 // Interval — useDate
 // =============================================================================
 

@@ -3,7 +3,7 @@ import type * as d from "./data-types.ts";
 export * from "@uwdata/flechette";
 
 export type { DataType, Field, Schema } from "./data-types.ts";
-export type { Scalar, ValueArray } from "./jsvalue.ts";
+export type { Scalar, ValueArray } from "./types.ts";
 export type { Column, Table } from "./table.gen.ts";
 
 // =============================================================================
@@ -18,10 +18,9 @@ interface TypeMatcher {
 
 export interface SchemaEntry<
 	T extends d.DataType = d.DataType,
-	Nullable extends boolean = boolean,
+	Nullable extends boolean = false,
 > {
 	readonly match: TypeMatcher;
-	readonly isNullable: Nullable;
 	nullable(): SchemaEntry<T, true>;
 }
 
@@ -30,9 +29,8 @@ function schema<T extends d.DataType>(
 ): SchemaEntry<T, false> {
 	return {
 		match,
-		isNullable: false as const,
 		nullable() {
-			return { ...this, isNullable: true as const };
+			return { ...this } as any;
 		},
 	};
 }
@@ -178,18 +176,16 @@ export function dictionary(valueType: SchemaEntry) {
 }
 
 // =============================================================================
-// either — schema-level "accept any of these"
+// of — schema-level "accept any of these"
 // =============================================================================
 
-export function either(entries: SchemaEntry[]) {
-	const entry = {
+export function of(entries: SchemaEntry[]) {
+	return {
 		match: { typeId: -999, options: entries },
-		isNullable: entries.some((e) => e.isNullable),
 		nullable() {
-			return { ...this, isNullable: true as const };
+			return { ...this } as any;
 		},
-	};
-	return entry as SchemaEntry;
+	} as SchemaEntry;
 }
 
 // =============================================================================
