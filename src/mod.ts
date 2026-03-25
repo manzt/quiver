@@ -1,4 +1,5 @@
 import * as f from "@uwdata/flechette";
+import type * as d from "./data-types.ts";
 export * from "@uwdata/flechette";
 
 export type { DataType, Field, Schema } from "./data-types.ts";
@@ -16,7 +17,7 @@ interface TypeMatcher {
 }
 
 export interface SchemaEntry<
-	T extends f.DataType = f.DataType,
+	T extends d.DataType = d.DataType,
 	Nullable extends boolean = boolean,
 > {
 	readonly match: TypeMatcher;
@@ -24,7 +25,7 @@ export interface SchemaEntry<
 	nullable(): SchemaEntry<T, true>;
 }
 
-function schema<T extends f.DataType>(
+function schema<T extends d.DataType>(
 	match: TypeMatcher,
 ): SchemaEntry<T, false> {
 	return {
@@ -41,78 +42,106 @@ function schema<T extends f.DataType>(
 // =============================================================================
 
 export function int8() {
-	return schema<f.IntType>({ typeId: 2, bitWidth: 8, signed: true });
+	return schema<d.IntType<8, true>>({ typeId: 2, bitWidth: 8, signed: true });
 }
 export function int16() {
-	return schema<f.IntType>({ typeId: 2, bitWidth: 16, signed: true });
+	return schema<d.IntType<16, true>>({
+		typeId: 2,
+		bitWidth: 16,
+		signed: true,
+	});
 }
 export function int32() {
-	return schema<f.IntType>({ typeId: 2, bitWidth: 32, signed: true });
+	return schema<d.IntType<32, true>>({
+		typeId: 2,
+		bitWidth: 32,
+		signed: true,
+	});
 }
 export function int64() {
-	return schema<f.IntType>({ typeId: 2, bitWidth: 64, signed: true });
+	return schema<d.IntType<64, true>>({
+		typeId: 2,
+		bitWidth: 64,
+		signed: true,
+	});
 }
 export function uint8() {
-	return schema<f.IntType>({ typeId: 2, bitWidth: 8, signed: false });
+	return schema<d.IntType<8, false>>({
+		typeId: 2,
+		bitWidth: 8,
+		signed: false,
+	});
 }
 export function uint16() {
-	return schema<f.IntType>({ typeId: 2, bitWidth: 16, signed: false });
+	return schema<d.IntType<16, false>>({
+		typeId: 2,
+		bitWidth: 16,
+		signed: false,
+	});
 }
 export function uint32() {
-	return schema<f.IntType>({ typeId: 2, bitWidth: 32, signed: false });
+	return schema<d.IntType<32, false>>({
+		typeId: 2,
+		bitWidth: 32,
+		signed: false,
+	});
 }
 export function uint64() {
-	return schema<f.IntType>({ typeId: 2, bitWidth: 64, signed: false });
+	return schema<d.IntType<64, false>>({
+		typeId: 2,
+		bitWidth: 64,
+		signed: false,
+	});
 }
 
 export function float16() {
-	return schema<f.FloatType>({ typeId: 3, precision: 0 });
+	return schema<d.FloatType<0>>({ typeId: 3, precision: 0 });
 }
 export function float32() {
-	return schema<f.FloatType>({ typeId: 3, precision: 1 });
+	return schema<d.FloatType<1>>({ typeId: 3, precision: 1 });
 }
 export function float64() {
-	return schema<f.FloatType>({ typeId: 3, precision: 2 });
+	return schema<d.FloatType<2>>({ typeId: 3, precision: 2 });
 }
 
 export function utf8() {
-	return schema<f.Utf8Type>({ typeId: 5 });
+	return schema<d.Utf8Type>({ typeId: 5 });
 }
 export function largeUtf8() {
-	return schema<f.LargeUtf8Type>({ typeId: 20 });
+	return schema<d.LargeUtf8Type>({ typeId: 20 });
 }
 export function utf8View() {
-	return schema<f.Utf8ViewType>({ typeId: 24 });
+	return schema<d.Utf8ViewType>({ typeId: 24 });
 }
 export function bool() {
-	return schema<f.BoolType>({ typeId: 6 });
+	return schema<d.BoolType>({ typeId: 6 });
 }
 export function binary() {
-	return schema<f.BinaryType>({ typeId: 4 });
+	return schema<d.BinaryType>({ typeId: 4 });
 }
 export function largeBinary() {
-	return schema<f.LargeBinaryType>({ typeId: 19 });
+	return schema<d.LargeBinaryType>({ typeId: 19 });
 }
 export function binaryView() {
-	return schema<f.BinaryViewType>({ typeId: 23 });
+	return schema<d.BinaryViewType>({ typeId: 23 });
 }
 
 export function dateDay() {
-	return schema<f.DateType>({ typeId: 8, unit: 0 });
+	return schema<d.DateType<0>>({ typeId: 8, unit: 0 });
 }
 export function dateMillisecond() {
-	return schema<f.DateType>({ typeId: 8, unit: 1 });
+	return schema<d.DateType<1>>({ typeId: 8, unit: 1 });
 }
 export function timestamp(unit?: f.TimeUnit_, timezone?: string | null) {
 	const match: TypeMatcher = { typeId: 10 };
 	if (unit !== undefined) match.unit = unit;
 	if (timezone !== undefined) match.timezone = timezone;
-	return schema<f.TimestampType>(match);
+	return schema<d.TimestampType>(match);
 }
 export function duration(unit?: f.TimeUnit_) {
 	const match: TypeMatcher = { typeId: 18 };
 	if (unit !== undefined) match.unit = unit;
-	return schema<f.DurationType>(match);
+	return schema<d.DurationType>(match);
 }
 
 // =============================================================================
@@ -120,16 +149,16 @@ export function duration(unit?: f.TimeUnit_) {
 // =============================================================================
 
 export function int() {
-	return schema<f.IntType>({ typeId: 2 });
+	return schema<d.IntType>({ typeId: 2 });
 }
 export function float() {
-	return schema<f.FloatType>({ typeId: 3 });
+	return schema<d.FloatType>({ typeId: 3 });
 }
 export function date() {
-	return schema<f.DateType>({ typeId: 8 });
+	return schema<d.DateType>({ typeId: 8 });
 }
 export function string() {
-	return schema<f.Utf8Type | f.LargeUtf8Type | f.Utf8ViewType>({
+	return schema<d.Utf8Type | d.LargeUtf8Type | d.Utf8ViewType>({
 		typeId: [5, 20, 24],
 	});
 }
@@ -139,13 +168,13 @@ export function string() {
 // =============================================================================
 
 export function list(child: SchemaEntry) {
-	return schema<f.ListType>({ typeId: 12, children: [child] });
+	return schema<d.ListType>({ typeId: 12, children: [child] });
 }
 export function struct(children: Record<string, SchemaEntry>) {
-	return schema<f.StructType>({ typeId: 13, children });
+	return schema<d.StructType>({ typeId: 13, children });
 }
 export function dictionary(valueType: SchemaEntry) {
-	return schema<f.DictionaryType>({ typeId: -1, dictionary: valueType });
+	return schema<d.DictionaryType>({ typeId: -1, dictionary: valueType });
 }
 
 // =============================================================================
@@ -178,9 +207,7 @@ function matchesType(
 	}
 
 	// typeId can be a number or array of numbers
-	const typeIds = Array.isArray(match.typeId)
-		? match.typeId
-		: [match.typeId];
+	const typeIds = Array.isArray(match.typeId) ? match.typeId : [match.typeId];
 	if (!typeIds.includes(actual.typeId)) return false;
 
 	// Check additional properties
@@ -212,9 +239,7 @@ function matchesType(
 			);
 			if (entries.length !== actualChildren.length) return false;
 			for (const [name, childEntry] of entries) {
-				const actualChild = actualChildren.find((c) =>
-					c.name === name
-				);
+				const actualChild = actualChildren.find((c) => c.name === name);
 				if (!actualChild) return false;
 				if (!matchesType(childEntry.match, actualChild.type)) {
 					return false;
@@ -248,7 +273,9 @@ function assertSchema(
 
 	if (declaredNames.length !== actualNames.length) {
 		throw new Error(
-			`Schema mismatch: expected ${declaredNames.length} columns (${declaredNames.join(", ")}), got ${actualNames.length} (${actualNames.join(", ")})`,
+			`Schema mismatch: expected ${declaredNames.length} columns (${
+				declaredNames.join(", ")
+			}), got ${actualNames.length} (${actualNames.join(", ")})`,
 		);
 	}
 
@@ -256,7 +283,9 @@ function assertSchema(
 		const actualField = actual.fields.find((f) => f.name === name);
 		if (!actualField) {
 			throw new Error(
-				`Schema mismatch: column "${name}" not found. Got: ${actualNames.join(", ")}`,
+				`Schema mismatch: column "${name}" not found. Got: ${
+					actualNames.join(", ")
+				}`,
 			);
 		}
 
@@ -269,13 +298,31 @@ function assertSchema(
 }
 
 // =============================================================================
+// Type-level mapping: SchemaEntry record → Field array for Table generic
+// =============================================================================
+
+type EntriesToFields<T extends Record<string, SchemaEntry>> = Array<
+	{
+		[K in keyof T & string]: {
+			name: K;
+			type: T[K] extends SchemaEntry<infer D, any> ? D : never;
+			nullable: T[K] extends SchemaEntry<any, infer N> ? N : false;
+		};
+	}[keyof T & string]
+>;
+
+// =============================================================================
 // table() — accepts SchemaEntry wrappers, validates on parse
 // =============================================================================
 
 export function table<
 	const Entries extends Record<string, SchemaEntry>,
 	const Options extends f.ExtractionOptions = {},
->(entries: Entries, options?: Options) {
+>(entries: Entries, options?: Options): {
+	parseIPC(
+		ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>,
+	): import("./table.gen.ts").Table<EntriesToFields<Entries>, Options>;
+} {
 	return {
 		parseIPC(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>) {
 			const table = f.tableFromIPC(ipc, options);
