@@ -2,7 +2,6 @@ import * as f from "@uwdata/flechette";
 import type * as d from "./data-types.ts";
 import type { Table } from "./table.gen.ts";
 
-export * from "@uwdata/flechette";
 export type { DataType, Field, Schema } from "./data-types.ts";
 export type { Scalar, ValueArray } from "./types.ts";
 export type { Column, Table } from "./table.gen.ts";
