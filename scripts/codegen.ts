@@ -191,18 +191,39 @@ function parseClassMembers(source: string, className: string): MemberInfo[] {
 			continue;
 		}
 
-		// Method: name(params): returnType
+		// Method: name<Generics?>(params): returnType
+		// Handles generic params like getChildAt<R extends T[keyof T]>(...)
 		const methodMatch = line.match(
-			/(\w+)\(([^)]*)\):\s*(.+);/,
+			/(\w+)(?:<[^>]*>)?\(([^)]*)\):\s*(.+)/,
 		);
 		if (methodMatch) {
+			let returnType = methodMatch[3];
+			let fullSignature = line;
+
+			// Multi-line return type: accumulate lines until balanced braces + ;
+			if (!returnType.endsWith(";")) {
+				let braceDepth = (returnType.match(/\{/g) || []).length -
+					(returnType.match(/\}/g) || []).length;
+				while (braceDepth > 0 && i + 1 < lines.length) {
+					i++;
+					const nextLine = lines[i].trim();
+					fullSignature += "\n" + lines[i];
+					returnType += " " + nextLine;
+					braceDepth += (nextLine.match(/\{/g) || []).length -
+						(nextLine.match(/\}/g) || []).length;
+				}
+			}
+
+			// Strip trailing semicolons
+			returnType = returnType.replace(/;$/, "").trim();
+
 			members.push({
 				name: methodMatch[1],
 				kind: "method",
-				signature: line,
+				signature: fullSignature,
 				readonly: false,
 				private: isPrivate,
-				returnType: methodMatch[3],
+				returnType,
 				params: methodMatch[2],
 				comments: currentComment,
 			});
@@ -306,7 +327,7 @@ function generateTable(members: MemberInfo[]): string {
 				lines.push(`\tgetChildAt<Index extends number>(`);
 				lines.push(`\t\tindex: Index,`);
 				lines.push(
-					`\t): Column<Fields[Index]["type"], Options, Fields[Index]["nullable"]>;`,
+					`\t): DistributeColumn<Fields[Index], Options>;`,
 				);
 				break;
 
@@ -590,6 +611,12 @@ type Row<Fields extends Array<Field>, Options extends ExtractionOptions> = {
 \t>;
 };
 
+// Distributive: produces a union of Columns instead of a Column with unioned generics.
+// Preserves the correlation between DataType and Nullable across union members.
+type DistributeColumn<F, Options extends ExtractionOptions> = F extends Field
+\t? Column<F["type"], Options, F["nullable"]>
+\t: never;
+
 export interface Table<
 \tFields extends Array<Field>,
 \tOptions extends ExtractionOptions = {},
@@ -611,6 +638,8 @@ ${columnBody}
 		"../src/table.gen.ts",
 	);
 	await Deno.writeTextFile(outPath, output);
+	const fmt = new Deno.Command("deno", { args: ["fmt", outPath] });
+	await fmt.output();
 	console.log(`\nWritten to: ${outPath}`);
 }
 

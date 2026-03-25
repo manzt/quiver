@@ -12,11 +12,6 @@ type ResolveNullable<T, Nullable extends boolean> = Nullable extends true
 	? T | null
 	: T;
 
-// Distributive: produces a union of Columns instead of a Column with unioned generics
-type DistributeColumn<F, Options extends ExtractionOptions> = F extends Field
-	? Column<F["type"], Options, F["nullable"]>
-	: never;
-
 type Row<Fields extends Array<Field>, Options extends ExtractionOptions> = {
 	[K in Fields[number]["name"]]: ResolveNullable<
 		Scalar<
@@ -26,6 +21,12 @@ type Row<Fields extends Array<Field>, Options extends ExtractionOptions> = {
 		Extract<Fields[number], { name: K }>["nullable"]
 	>;
 };
+
+// Distributive: produces a union of Columns instead of a Column with unioned generics.
+// Preserves the correlation between DataType and Nullable across union members.
+type DistributeColumn<F, Options extends ExtractionOptions> = F extends Field
+	? Column<F["type"], Options, F["nullable"]>
+	: never;
 
 export interface Table<
 	Fields extends Array<Field>,
@@ -75,7 +76,9 @@ export interface Table<
 
 	/**
 	 * Return the child column at the given index position.
+	 * @template {T[keyof T]} R
 	 * @param {number} index The column index.
+	 * @returns {Column<R>}
 	 */
 	getChildAt<Index extends number>(
 		index: Index,
@@ -83,7 +86,9 @@ export interface Table<
 
 	/**
 	 * Return the first child column with the given name.
-	 * @param {string} name The column name.
+	 * @template {keyof T} P
+	 * @param {P} name The column name.
+	 * @returns {Column<T[P]>}
 	 */
 	getChild<Name extends Fields[number]["name"]>(
 		name: Name,
@@ -95,8 +100,11 @@ export interface Table<
 
 	/**
 	 * Construct a new table containing only columns at the specified indices.
+	 * The order of columns in the new table matches the order of input indices.
+	 * @template {T[keyof T]} V
 	 * @param {number[]} indices The indices of columns to keep.
 	 * @param {string[]} [as] Optional new names for selected columns.
+	 * @returns {Table<{ [key: string]: V }>} A new table with selected columns.
 	 */
 	selectAt<const Indices extends number[]>(
 		indices: Indices,
@@ -108,8 +116,12 @@ export interface Table<
 
 	/**
 	 * Construct a new table containing only columns with the specified names.
-	 * @param {string[]} names Names of columns to keep.
+	 * If columns have duplicate names, the first (with lowest index) is used.
+	 * The order of columns in the new table matches the order of input names.
+	 * @template {keyof T} K
+	 * @param {K[]} names Names of columns to keep.
 	 * @param {string[]} [as] Optional new names for selected columns.
+	 * @returns A new table with columns matching the specified names.
 	 */
 	select<const Names extends Array<Fields[number]["name"]>>(
 		names: Names,
