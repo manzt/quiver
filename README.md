@@ -87,15 +87,29 @@ q.table({
 
 ## how it works
 
+Flechette parses Arrow IPC into JavaScript values, but the mapping from Arrow
+types to JS types depends on the data type, the extraction options, and whether
+nulls are present. Quiver captures all of this statically. See
+[flechette's type mapping table](https://idl.uw.edu/flechette/api/data-types)
+for the full Arrow → JS correspondence.
+
 Builders return phantom schema entries — no runtime data, just match criteria
 and a type-level generic. `parseIPC` calls flechette's `tableFromIPC`, validates
 the Arrow schema against your declared types, and returns the flechette table
 with quiver's generics overlaid.
 
-Types map every `DataType + ExtractionOptions` to the JS type flechette actually
-returns: `number`, `bigint`, `Date`, `Int32Array`, `{ field:
-type }` for
-structs, etc. Options propagate through nested types.
+Quiver tracks two type mappings from `DataType + ExtractionOptions`:
+
+- `Scalar` — what `column.at(i)` returns (`number`, `bigint`, `Date`,
+  `Int32Array` for list elements, `{ field: type }` for structs, etc.)
+- `ValueArray` — what `column.toArray()` returns. Non-nullable numeric columns
+  get zero-copy typed arrays (`Int32Array`, `Float64Array`). Nullable numeric
+  columns can be either typed arrays or `Array<number | null>` depending on
+  whether nulls are present in the data. Non-numeric columns always return
+  `Array`.
+
+Options propagate through nested types — a struct containing an `int64` field
+with `{ useBigInt: true }` correctly resolves to `{ x: bigint }`.
 
 ## versioning
 
