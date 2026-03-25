@@ -198,11 +198,16 @@ async function main() {
         snap.col,
       );
 
+      // Reconstruct the //^? line preserving caret position
+      const prefix = lines[snap.line].substring(
+        0,
+        lines[snap.line].indexOf("^?"),
+      );
+
       if (snap.existing === "") {
         // Empty snapshot — fill in
         if (update) {
-          const indent = lines[snap.line].match(/^(\s*)/)?.[1] ?? "";
-          lines[snap.line] = `${indent}//^? ${actual}`;
+          lines[snap.line] = `${prefix}^? ${actual}`;
           modified = true;
           updates++;
           console.log(
@@ -221,8 +226,7 @@ async function main() {
         }
       } else if (snap.existing !== actual) {
         if (update) {
-          const indent = lines[snap.line].match(/^(\s*)/)?.[1] ?? "";
-          lines[snap.line] = `${indent}//^? ${actual}`;
+          lines[snap.line] = `${prefix}^? ${actual}`;
           modified = true;
           updates++;
           console.log(
