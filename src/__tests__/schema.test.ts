@@ -7,7 +7,7 @@
 
 import { assertEquals, assertInstanceOf, assertThrows } from "@std/assert";
 import * as f from "@uwdata/flechette";
-import * as q from "../src/mod.ts";
+import * as q from "../mod.ts";
 
 /** Build a table, encode to IPC, return bytes. */
 function toIPC(

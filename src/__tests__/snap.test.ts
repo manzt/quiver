@@ -22,7 +22,7 @@
 
 import { describe, expect, test } from "vitest";
 import * as f from "@uwdata/flechette";
-import * as q from "../src/mod.ts";
+import * as q from "../mod.ts";
 
 function ipc(data: unknown[], type: f.DataType): Uint8Array {
   const t = f.tableFromArrays([["a", data]], { types: { a: type } });

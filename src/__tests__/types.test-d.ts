@@ -17,11 +17,11 @@
 
 // deno-lint-ignore-file no-unused-vars
 
-import type { Scalar, ValueArray } from "../src/types.ts";
-import type * as d from "../src/data-types.ts";
-import type { Column, Table } from "../src/table.gen.ts";
+import type { Scalar, ValueArray } from "../types.ts";
+import type * as d from "../data-types.ts";
+import type { Column, Table } from "../table.gen.ts";
 import type { Equal, Expect } from "./test-utils.ts";
-import * as q from "../src/mod.ts";
+import * as q from "../mod.ts";
 
 // =============================================================================
 // 1. JsValue: Primitives

@@ -5,11 +5,11 @@
   "license": "MIT",
   "nodeModulesDir": "auto",
   "test": {
-    "exclude": ["__tests__/snap.test.ts"]
+    "exclude": ["src/__tests__/snap.test.ts"]
   },
   "tasks": {
-    "test": "deno test && deno run -A vitest run __tests__/snap.test.ts && deno run -A scripts/snap.ts __tests__/snap.test.ts",
-    "test:update": "deno run -A vitest run __tests__/snap.test.ts --update && deno run -A scripts/snap.ts --update __tests__/snap.test.ts"
+    "test": "deno test && deno run -A vitest run src/__tests__/snap.test.ts && deno run -A scripts/snap.ts src/__tests__/snap.test.ts",
+    "test:update": "deno run -A vitest run src/__tests__/snap.test.ts --update && deno run -A scripts/snap.ts --update src/__tests__/snap.test.ts"
   },
   "lint": {
     "rules": {
