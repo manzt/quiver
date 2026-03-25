@@ -496,7 +496,104 @@ Deno.test("of([int32(), float64()]) rejects utf8 column", () => {
 });
 
 // =============================================================================
-// 8. End-to-end: verify returned table works correctly
+// 8. Schema validation edge cases
+// =============================================================================
+
+Deno.test("parseIPC throws when time bitWidth mismatches", () => {
+	const ipc = toIPC([["x", [3600]]], { x: f.timeSecond() });
+	// timeSecond is 32-bit, timeMicrosecond is 64-bit
+	const schema = q.table({ x: q.timeMicrosecond() });
+	assertThrows(() => schema.parseIPC(ipc));
+});
+
+Deno.test("parseIPC throws when decimal precision mismatches", () => {
+	const ipc = toIPC([["x", [1.5]]], { x: f.decimal(10, 2) });
+	const schema = q.table({ x: q.decimal(5, 3) });
+	assertThrows(() => schema.parseIPC(ipc));
+});
+
+Deno.test("parseIPC throws when list child type mismatches", () => {
+	const ipc = toIPC([["x", [[1, 2]]]], { x: f.list(f.int32()) });
+	const schema = q.table({ x: q.list(q.utf8()) });
+	assertThrows(() => schema.parseIPC(ipc));
+});
+
+Deno.test("parseIPC throws when list vs struct", () => {
+	const ipc = toIPC([["x", [[1, 2]]]], { x: f.list(f.int32()) });
+	const schema = q.table({ x: q.struct({ a: q.int32() }) });
+	assertThrows(() => schema.parseIPC(ipc));
+});
+
+Deno.test("of([int(), string()]) with broad types accepts int8", () => {
+	const ipc = toIPC([["x", [1]]], { x: f.int8() });
+	const schema = q.table({ x: q.of([q.int(), q.string()]) });
+	const table = schema.parseIPC(ipc);
+	assertEquals(table.numRows, 1);
+});
+
+Deno.test("of([int(), string()]) with broad types accepts largeUtf8", () => {
+	const ipc = toIPC([["x", ["hi"]]], { x: f.largeUtf8() });
+	const schema = q.table({ x: q.of([q.int(), q.string()]) });
+	const table = schema.parseIPC(ipc);
+	assertEquals(table.numRows, 1);
+});
+
+Deno.test("of([int(), string()]) rejects float64", () => {
+	const ipc = toIPC([["x", [1.0]]], { x: f.float64() });
+	const schema = q.table({ x: q.of([q.int(), q.string()]) });
+	assertThrows(() => schema.parseIPC(ipc));
+});
+
+Deno.test("dictionary with non-string value type", () => {
+	const ipc = toIPC([["x", [1, 2, 1, 3]]], { x: f.dictionary(f.int32()) });
+	const schema = q.table({ x: q.dictionary(q.int32()) });
+	const table = schema.parseIPC(ipc);
+	assertEquals(table.numRows, 4);
+});
+
+Deno.test("dictionary value type mismatch throws", () => {
+	const ipc = toIPC(
+		[["x", ["a", "b", "a"]]],
+		{ x: f.dictionary(f.utf8()) },
+	);
+	const schema = q.table({ x: q.dictionary(q.int32()) });
+	assertThrows(() => schema.parseIPC(ipc));
+});
+
+Deno.test("error message includes column name on type mismatch", () => {
+	const ipc = toIPC([["myCol", [1]]], { myCol: f.int32() });
+	const schema = q.table({ myCol: q.utf8() });
+	try {
+		schema.parseIPC(ipc);
+		throw new Error("should have thrown");
+	} catch (e) {
+		assertEquals((e as Error).message.includes("myCol"), true);
+	}
+});
+
+Deno.test("error message includes column names on count mismatch", () => {
+	const ipc = toIPC(
+		[["a", [1]], ["b", [2]]],
+		{ a: f.int32(), b: f.int32() },
+	);
+	const schema = q.table({ a: q.int32() });
+	try {
+		schema.parseIPC(ipc);
+		throw new Error("should have thrown");
+	} catch (e) {
+		const msg = (e as Error).message;
+		assertEquals(msg.includes("1"), true); // expected count
+		assertEquals(msg.includes("2"), true); // actual count
+	}
+});
+
+Deno.test("invalid IPC bytes throw", () => {
+	const schema = q.table({ x: q.int32() });
+	assertThrows(() => schema.parseIPC(new Uint8Array([1, 2, 3, 4])));
+});
+
+// =============================================================================
+// 9. End-to-end: verify returned table works correctly
 // =============================================================================
 
 Deno.test("parsed table .toArray() returns correct values", () => {

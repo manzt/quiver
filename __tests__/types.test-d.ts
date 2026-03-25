@@ -648,6 +648,103 @@ type _VA_NullableDateUseDate = Expect<
 	>
 >;
 
+// Uint types
+type _VA_Uint8 = Expect<
+	Equal<ValueArray<d.IntType<8, false>, {}, false>, Uint8Array>
+>;
+type _VA_Uint16 = Expect<
+	Equal<ValueArray<d.IntType<16, false>, {}, false>, Uint16Array>
+>;
+type _VA_Uint32 = Expect<
+	Equal<ValueArray<d.IntType<32, false>, {}, false>, Uint32Array>
+>;
+type _VA_Uint64 = Expect<
+	Equal<ValueArray<d.IntType<64, false>, {}, false>, Float64Array>
+>;
+type _VA_Uint64BigInt = Expect<
+	Equal<
+		ValueArray<d.IntType<64, false>, { useBigInt: true }, false>,
+		BigUint64Array
+	>
+>;
+
+// Int64 default (no useBigInt) → Float64Array
+type _VA_Int64Default = Expect<
+	Equal<ValueArray<d.IntType<64, true>, {}, false>, Float64Array>
+>;
+
+// Time32/64
+type _VA_Time32 = Expect<
+	Equal<ValueArray<d.TimeType<32>, {}, false>, Int32Array>
+>;
+type _VA_Time64Default = Expect<
+	Equal<ValueArray<d.TimeType<64>, {}, false>, Float64Array>
+>;
+type _VA_Time64BigInt = Expect<
+	Equal<ValueArray<d.TimeType<64>, { useBigInt: true }, false>, BigInt64Array>
+>;
+
+// Timestamp
+type _VA_TsDefault = Expect<
+	Equal<ValueArray<d.TimestampType, {}, false>, Float64Array>
+>;
+type _VA_TsDate = Expect<
+	Equal<ValueArray<d.TimestampType, { useDate: true }, false>, Array<Date>>
+>;
+
+// Duration
+type _VA_DurDefault = Expect<
+	Equal<ValueArray<d.DurationType, {}, false>, Float64Array>
+>;
+type _VA_DurBigInt = Expect<
+	Equal<ValueArray<d.DurationType, { useBigInt: true }, false>, BigInt64Array>
+>;
+
+// Decimal
+type _VA_DecDefault = Expect<
+	Equal<ValueArray<d.DecimalType, {}, false>, Float64Array>
+>;
+type _VA_DecInt = Expect<
+	Equal<
+		ValueArray<d.DecimalType, { useDecimalInt: true }, false>,
+		Array<bigint>
+	>
+>;
+
+// Float16
+type _VA_Float16 = Expect<
+	Equal<ValueArray<d.FloatType<0>, {}, false>, Float64Array>
+>;
+
+// Nullable versions
+type _VA_NullableUint32 = Expect<
+	Equal<
+		ValueArray<d.IntType<32, false>, {}, true>,
+		Uint32Array | Array<number | null>
+	>
+>;
+type _VA_NullableTime32 = Expect<
+	Equal<ValueArray<d.TimeType<32>, {}, true>, Int32Array | Array<number | null>>
+>;
+type _VA_NullableTs = Expect<
+	Equal<
+		ValueArray<d.TimestampType, {}, true>,
+		Float64Array | Array<number | null>
+	>
+>;
+type _VA_NullableDur = Expect<
+	Equal<
+		ValueArray<d.DurationType, {}, true>,
+		Float64Array | Array<number | null>
+	>
+>;
+type _VA_NullableDateNoOpt = Expect<
+	Equal<
+		ValueArray<d.DateType, {}, true>,
+		Float64Array | Array<number | null>
+	>
+>;
+
 // =============================================================================
 // Cross-cutting continued
 // =============================================================================

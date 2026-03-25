@@ -46,26 +46,26 @@ Table<Fields, Options>        — wraps flechette Table
 
 ## Type coverage
 
-What quiver can statically type from a declared schema, and where the
-limits are.
+What quiver can statically type from a declared schema, and where the limits
+are.
 
-| Aspect | Typed? | Notes |
-|--------|--------|-------|
-| Scalar value per DataType | yes | `Scalar<D, O>` — all 27 Arrow types mapped |
-| Options affect scalar type | yes | `useBigInt`, `useDate`, `useDecimalInt`, `useMap` |
-| Struct fields | yes | `{ [name]: Scalar<childType> }` with option propagation |
-| Union variants | yes | union of children's scalar types |
-| Map key/value types | yes | when parameterized; falls back to `unknown` otherwise |
-| List child type | yes | `Int32Array` for numeric, `Array<T>` for others |
-| Dictionary unwrap | yes | resolves to inner value type |
-| RunEndEncoded | yes | resolves to values child type |
-| `toArray()` typed array | yes | `TypedArrayFor<D, O>` for non-nullable numerics |
-| `toArray()` nullable | partial | `TypedArray \| Array<T \| null>` — can't know at compile time whether nulls are present |
-| `getChildAt(i)` record form | partial | returns union of all column types (order unknown) |
-| `getChildAt(i)` tuple form | yes | exact type per index |
-| `getChild(name)` | yes | exact type via `Extract` |
-| Column generic decomposition | no | `Column<infer D>` hits TS recursion depth; use `.type` property instead |
-| `useProxy` struct shape | no | proxy objects don't support enumeration; type says `{ ... }` but `Object.keys()` returns `[]` |
+| Aspect                       | Typed?  | Notes                                                                                         |
+| ---------------------------- | ------- | --------------------------------------------------------------------------------------------- |
+| Scalar value per DataType    | yes     | `Scalar<D, O>` — all 27 Arrow types mapped                                                    |
+| Options affect scalar type   | yes     | `useBigInt`, `useDate`, `useDecimalInt`, `useMap`                                             |
+| Struct fields                | yes     | `{ [name]: Scalar<childType> }` with option propagation                                       |
+| Union variants               | yes     | union of children's scalar types                                                              |
+| Map key/value types          | yes     | when parameterized; falls back to `unknown` otherwise                                         |
+| List child type              | yes     | `Int32Array` for numeric, `Array<T>` for others                                               |
+| Dictionary unwrap            | yes     | resolves to inner value type                                                                  |
+| RunEndEncoded                | yes     | resolves to values child type                                                                 |
+| `toArray()` typed array      | yes     | `TypedArrayFor<D, O>` for non-nullable numerics                                               |
+| `toArray()` nullable         | partial | `TypedArray \| Array<T \| null>` — can't know at compile time whether nulls are present       |
+| `getChildAt(i)` record form  | partial | returns union of all column types (order unknown)                                             |
+| `getChildAt(i)` tuple form   | yes     | exact type per index                                                                          |
+| `getChild(name)`             | yes     | exact type via `Extract`                                                                      |
+| Column generic decomposition | no      | `Column<infer D>` hits TS recursion depth; use `.type` property instead                       |
+| `useProxy` struct shape      | no      | proxy objects don't support enumeration; type says `{ ... }` but `Object.keys()` returns `[]` |
 
 ## Tests
 

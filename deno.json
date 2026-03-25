@@ -6,9 +6,6 @@
 	"fmt": {
 		"useTabs": true
 	},
-	"exclude": [
-		"__tests__/table.test-d.ts"
-	],
 	"lint": {
 		"rules": {
 			"exclude": ["prefer-const"]
