@@ -22,9 +22,9 @@ npx jsr add @manzt/quiver
 import * as q from "@manzt/quiver";
 
 let schema = q.table({
-	id: q.int32(),
-	name: q.utf8().nullable(),
-	score: q.float64(),
+  id: q.int32(),
+  name: q.utf8().nullable(),
+  score: q.float64(),
 }, { useDate: true });
 
 let table = schema.parseIPC(bytes); // throws if schema doesn't match
@@ -40,20 +40,20 @@ iteration. Change `useBigInt` or `useDate` and the types update.
 
 ```ts
 let schema = q.table({
-	id: q.int32(),
-	name: q.utf8().nullable(),
-	score: q.float64(),
-	created: q.dateDay(),
+  id: q.int32(),
+  name: q.utf8().nullable(),
+  score: q.float64(),
+  created: q.dateDay(),
 }, { useDate: true });
 
 type MyTable = q.infer<typeof schema>;
 
 function processTable(table: MyTable) {
-	for (let row of table) {
-		row.id; // number
-		row.name; // string | null
-		row.created; // Date (because useDate: true)
-	}
+  for (let row of table) {
+    row.id; // number
+    row.name; // string | null
+    row.created; // Date (because useDate: true)
+  }
 }
 
 let response = await fetch("https://example.com/data.arrow");
@@ -89,16 +89,16 @@ These compose with the rest of the API:
 
 ```ts
 // Accept alternatives
-q.table({ value: q.of([q.int32(), q.float64()]) });
+q.table({ value: q.either([q.int32(), q.float64()]) });
 
 // Ordered columns (tuple form) — getChildAt knows exact types
 q.table([["id", q.int32()], ["name", q.utf8()]]);
 
 // Nested types
 q.table({
-	tags: q.list(q.utf8()),
-	meta: q.struct({ key: q.utf8(), count: q.int32() }),
-	category: q.dictionary(q.utf8()),
+  tags: q.list(q.utf8()),
+  meta: q.struct({ key: q.utf8(), count: q.int32() }),
+  category: q.dictionary(q.utf8()),
 });
 ```
 

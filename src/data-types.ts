@@ -18,10 +18,10 @@
 import type * as f from "@uwdata/flechette";
 
 type Prettify<T> =
-	& {
-		[K in keyof T]: T[K];
-	}
-	& {};
+  & {
+    [K in keyof T]: T[K];
+  }
+  & {};
 
 // =============================================================================
 // Types that don't need generics — pass through from flechette
@@ -44,46 +44,46 @@ export type Utf8ViewType = f.Utf8ViewType;
 
 /** Integer data type with narrowed bitWidth and signed. */
 export type IntType<
-	BitWidth extends f.IntBitWidth = f.IntBitWidth,
-	Signed extends boolean = boolean,
+  BitWidth extends f.IntBitWidth = f.IntBitWidth,
+  Signed extends boolean = boolean,
 > = f.IntType & { bitWidth: BitWidth; signed: Signed };
 
 /** Floating point number data type with narrowed precision. */
 export type FloatType<Precision extends f.Precision_ = f.Precision_> =
-	& f.FloatType
-	& { precision: Precision };
+  & f.FloatType
+  & { precision: Precision };
 
 /** Fixed decimal number data type with narrowed bitWidth. */
 export type DecimalType<
-	BitWidth extends 32 | 64 | 128 | 256 = 32 | 64 | 128 | 256,
+  BitWidth extends 32 | 64 | 128 | 256 = 32 | 64 | 128 | 256,
 > = f.DecimalType & { bitWidth: BitWidth };
 
 /** Date data type with narrowed unit. */
 export type DateType<Unit extends f.DateUnit_ = f.DateUnit_> = f.DateType & {
-	unit: Unit;
+  unit: Unit;
 };
 
 /** Time data type with narrowed bitWidth and unit. */
 export type TimeType<
-	BitWidth extends 32 | 64 = 32 | 64,
-	Unit extends f.TimeUnit_ = f.TimeUnit_,
+  BitWidth extends 32 | 64 = 32 | 64,
+  Unit extends f.TimeUnit_ = f.TimeUnit_,
 > = f.TimeType & { bitWidth: BitWidth; unit: Unit };
 
 /** Timestamp data type with narrowed unit and timezone. */
 export type TimestampType<
-	Unit extends f.TimeUnit_ = f.TimeUnit_,
-	Timezone extends string | null = string | null,
+  Unit extends f.TimeUnit_ = f.TimeUnit_,
+  Timezone extends string | null = string | null,
 > = f.TimestampType & { unit: Unit; timezone: Timezone };
 
 /** Date/time interval data type with narrowed unit. */
 export type IntervalType<Unit extends f.IntervalUnit_ = f.IntervalUnit_> =
-	& f.IntervalType
-	& { unit: Unit };
+  & f.IntervalType
+  & { unit: Unit };
 
 /** Duration data type with narrowed unit. */
 export type DurationType<Unit extends f.TimeUnit_ = f.TimeUnit_> =
-	& f.DurationType
-	& { unit: Unit };
+  & f.DurationType
+  & { unit: Unit };
 
 // =============================================================================
 // Container types — must be interfaces (not type aliases) because they
@@ -92,132 +92,132 @@ export type DurationType<Unit extends f.TimeUnit_ = f.TimeUnit_> =
 // =============================================================================
 
 export type DataType =
-	| NoneType
-	| NullType
-	| IntType
-	| FloatType
-	| BinaryType
-	| Utf8Type
-	| BoolType
-	| DecimalType
-	| DateType
-	| TimeType
-	| TimestampType
-	| IntervalType
-	| ListType
-	| StructType
-	| UnionType
-	| FixedSizeBinaryType
-	| FixedSizeListType
-	| MapType
-	| DurationType
-	| LargeBinaryType
-	| LargeUtf8Type
-	| LargeListType
-	| RunEndEncodedType
-	| BinaryViewType
-	| Utf8ViewType
-	| ListViewType
-	| LargeListViewType
-	| DictionaryType;
+  | NoneType
+  | NullType
+  | IntType
+  | FloatType
+  | BinaryType
+  | Utf8Type
+  | BoolType
+  | DecimalType
+  | DateType
+  | TimeType
+  | TimestampType
+  | IntervalType
+  | ListType
+  | StructType
+  | UnionType
+  | FixedSizeBinaryType
+  | FixedSizeListType
+  | MapType
+  | DurationType
+  | LargeBinaryType
+  | LargeUtf8Type
+  | LargeListType
+  | RunEndEncodedType
+  | BinaryViewType
+  | Utf8ViewType
+  | ListViewType
+  | LargeListViewType
+  | DictionaryType;
 
 /** Arrow table schema. */
 export interface Schema<Fields extends Array<Field> = Array<Field>> {
-	version?: f.Version_;
-	endianness?: f.Endianness_;
-	fields: {
-		[K in keyof Fields]: Prettify<Fields[K] & { metadata: f.Metadata }>;
-	};
-	metadata?: f.Metadata | null;
+  version?: f.Version_;
+  endianness?: f.Endianness_;
+  fields: {
+    [K in keyof Fields]: Prettify<Fields[K] & { metadata: f.Metadata }>;
+  };
+  metadata?: f.Metadata | null;
 }
 
 /** Arrow schema field definition. */
 export interface Field<
-	Name extends string = string,
-	Type extends DataType = DataType,
+  Name extends string = string,
+  Type extends DataType = DataType,
 > {
-	readonly name: Name;
-	readonly type: Type;
-	readonly nullable: boolean;
+  readonly name: Name;
+  readonly type: Type;
+  readonly nullable: boolean;
 }
 
 /** Dictionary-encoded data type. */
 export interface DictionaryType<Dictionary extends DataType = DataType> {
-	typeId: -1;
-	dictionary: Dictionary;
-	id: number;
-	indices: IntType;
-	ordered: boolean;
+  typeId: -1;
+  dictionary: Dictionary;
+  id: number;
+  indices: IntType;
+  ordered: boolean;
 }
 
 /** List data type. */
 export interface ListType<Child extends Field = Field> {
-	typeId: 12;
-	children: [Child];
-	offsets: Int32ArrayConstructor;
+  typeId: 12;
+  children: [Child];
+  offsets: Int32ArrayConstructor;
 }
 
 /** Struct data type. */
 export interface StructType<Children extends Array<Field> = Array<Field>> {
-	typeId: 13;
-	children: Children;
+  typeId: 13;
+  children: Children;
 }
 
 /** Union data type. */
 export interface UnionType<Children extends Array<Field> = Array<Field>> {
-	typeId: 14;
-	mode: f.UnionMode_;
-	typeIds: number[];
-	typeMap: Record<number, number>;
-	children: Children;
-	typeIdForValue?: (value: any, index: number) => number;
-	offsets: Int32ArrayConstructor;
+  typeId: 14;
+  mode: f.UnionMode_;
+  typeIds: number[];
+  typeMap: Record<number, number>;
+  children: Children;
+  typeIdForValue?: (value: any, index: number) => number;
+  offsets: Int32ArrayConstructor;
 }
 
 /** Fixed-size list data type. */
 export interface FixedSizeListType<
-	Children extends Array<Field> = Array<Field>,
+  Children extends Array<Field> = Array<Field>,
 > {
-	typeId: 16;
-	stride: number;
-	children: Children;
+  typeId: 16;
+  stride: number;
+  children: Children;
 }
 
 /** Key-value map data type. */
 export interface MapType<Child extends Field = Field> {
-	typeId: 17;
-	keysSorted: boolean;
-	children: [Child];
-	offsets: Int32ArrayConstructor;
+  typeId: 17;
+  keysSorted: boolean;
+  children: [Child];
+  offsets: Int32ArrayConstructor;
 }
 
 /** Large list data type. */
 export interface LargeListType<Child extends Field = Field> {
-	typeId: 21;
-	children: [Child];
-	offsets: BigInt64ArrayConstructor;
+  typeId: 21;
+  children: [Child];
+  offsets: BigInt64ArrayConstructor;
 }
 
 /** RunEndEncoded data type. */
 type RunEnds_ = Field<string, IntType<16 | 32 | 64, true>>;
 export interface RunEndEncodedType<
-	RunEnds extends RunEnds_ = RunEnds_,
-	Values extends Field = Field,
+  RunEnds extends RunEnds_ = RunEnds_,
+  Values extends Field = Field,
 > {
-	typeId: 22;
-	children: [RunEnds, Values];
+  typeId: 22;
+  children: [RunEnds, Values];
 }
 
 /** ListView data type. */
 export interface ListViewType<Child extends Field = Field> {
-	typeId: 25;
-	children: [Child];
-	offsets: Int32ArrayConstructor;
+  typeId: 25;
+  children: [Child];
+  offsets: Int32ArrayConstructor;
 }
 
 /** Large ListView data type. */
 export interface LargeListViewType<Child extends Field = Field> {
-	typeId: 26;
-	children: [Child];
-	offsets: BigInt64ArrayConstructor;
+  typeId: 26;
+  children: [Child];
+  offsets: BigInt64ArrayConstructor;
 }

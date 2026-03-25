@@ -7,8 +7,8 @@
 
 /** True if A and B are exactly the same type. */
 export type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends
-	(<T>() => T extends B ? 1 : 2) ? true
-	: false;
+  (<T>() => T extends B ? 1 : 2) ? true
+  : false;
 
 /** Compile-time assertion: use `Expect<Equal<Actual, Expected>>`. */
 export type Expect<T extends true> = T;

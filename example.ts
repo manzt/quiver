@@ -14,10 +14,10 @@ import * as q from "./src/mod.ts";
 // =============================================================================
 
 const schema = q.table({
-	id: q.int32(),
-	name: q.utf8().nullable(),
-	score: q.float64(),
-	created: q.dateDay(),
+  id: q.int32(),
+  name: q.utf8().nullable(),
+  score: q.float64(),
+  created: q.dateDay(),
 }, { useDate: true });
 
 type MyTable = q.infer<typeof schema>;
@@ -41,9 +41,9 @@ const subRow = sub.at(0); // { id: number; created: Date }
 // =============================================================================
 
 const ordered = q.table([
-	["id", q.int32()],
-	["name", q.utf8().nullable()],
-	["score", q.float64()],
+  ["id", q.int32()],
+  ["name", q.utf8().nullable()],
+  ["score", q.float64()],
 ], { useDate: true });
 
 type OrderedTable = q.infer<typeof ordered>;
@@ -59,8 +59,8 @@ const col2 = ot.getChildAt(2); // Column<FloatType<2>, ..., false>
 // =============================================================================
 
 const bigintSchema = q.table({
-	x: q.int64(),
-	y: q.int32(),
+  x: q.int64(),
+  y: q.int32(),
 }, { useBigInt: true });
 
 type BigIntTable = q.infer<typeof bigintSchema>;
@@ -72,10 +72,10 @@ const brow = bt.at(0); // { x: bigint; y: number }
 // =============================================================================
 
 const flexSchema = q.table({
-	num: q.int(), // any int (int8, int16, int32, int64, unsigned)
-	text: q.string(), // any string (utf8, largeUtf8, utf8View)
-	day: q.date(), // any date (dateDay, dateMillisecond)
-	n: q.float(), // any float (float16, float32, float64)
+  num: q.int(), // any int (int8, int16, int32, int64, unsigned)
+  text: q.string(), // any string (utf8, largeUtf8, utf8View)
+  day: q.date(), // any date (dateDay, dateMillisecond)
+  n: q.float(), // any float (float16, float32, float64)
 });
 
 type FlexTable = q.infer<typeof flexSchema>;
@@ -87,8 +87,8 @@ const frow = ft.at(0); // { num: number; text: string; day: number; n: number }
 // =============================================================================
 
 const unionSchema = q.table({
-	value: q.of([q.int32(), q.float64()]),
-	label: q.utf8().nullable(),
+  value: q.either([q.int32(), q.float64()]),
+  label: q.utf8().nullable(),
 });
 
 type UnionTable = q.infer<typeof unionSchema>;
@@ -100,7 +100,7 @@ const urow = ut.at(0); // { value: number; label: string | null }
 // =============================================================================
 
 const nestedSchema = q.table({
-	tags: q.list(q.utf8()),
-	meta: q.struct({ key: q.utf8(), count: q.int32() }),
-	category: q.dictionary(q.utf8()),
+  tags: q.list(q.utf8()),
+  meta: q.struct({ key: q.utf8(), count: q.int32() }),
+  category: q.dictionary(q.utf8()),
 });

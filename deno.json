@@ -1,17 +1,9 @@
 {
-	"name": "@manzt/quiver",
-	"version": "2.3.0",
-	"exports": "./src/mod.ts",
-	"license": "MIT",
-	"fmt": {
-		"useTabs": true
-	},
-	"lint": {
-		"rules": {
-			"exclude": ["prefer-const"]
-		}
-	},
-	"imports": {
-		"@uwdata/flechette": "npm:@uwdata/flechette@^2.3.0"
-	}
+  "name": "@manzt/quiver",
+  "version": "2.3.0",
+  "exports": "./src/mod.ts",
+  "license": "MIT",
+  "imports": {
+    "@uwdata/flechette": "npm:@uwdata/flechette@^2.3.0"
+  }
 }
