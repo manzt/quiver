@@ -3,6 +3,10 @@
   "version": "2.3.0",
   "exports": "./src/mod.ts",
   "license": "MIT",
+  "nodeModulesDir": "auto",
+  "test": {
+    "exclude": ["__tests__/snap.test.ts"]
+  },
   "lint": {
     "rules": {
       "exclude": ["ban-types", "no-explicit-any"]
@@ -11,6 +15,7 @@
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.19",
     "@std/path": "jsr:@std/path@^1.1.4",
-    "@uwdata/flechette": "npm:@uwdata/flechette@^2.3.0"
+    "@uwdata/flechette": "npm:@uwdata/flechette@^2.3.0",
+    "typescript": "npm:typescript@^6.0.2"
   }
 }
