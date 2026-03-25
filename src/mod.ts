@@ -228,7 +228,7 @@ export const js: {
   bytes(): SchemaEntry<
     d.BinaryType | d.LargeBinaryType | d.BinaryViewType | d.FixedSizeBinaryType
   >;
-  date(): SchemaEntry<d.DateType | d.TimestampType | d.IntervalType>;
+  date(): SchemaEntry<d.DateType | d.TimestampType>;
 } = {
   /** Matches any Int or Float column. Scalar: `number`. */
   number: () => schema({ typeId: [2, 3] }),
@@ -246,12 +246,12 @@ export const js: {
   /** Matches any binary column (Binary, LargeBinary, BinaryView, FixedSizeBinary). Scalar: `Uint8Array`. */
   bytes: () => schema({ typeId: [4, 19, 23, 15] }),
   /**
-   * Matches any date-like column (Date, Timestamp, Interval). Scalar: `Date`.
+   * Matches any date-like column (Date, Timestamp). Scalar: `Date`.
    *
    * Requires `{ useDate: true }` in table options — without it values
    * are returned as `number` (epoch milliseconds).
    */
-  date: () => schema({ typeId: [8, 10, 11] }),
+  date: () => schema({ typeId: [8, 10] }),
 };
 
 // =============================================================================

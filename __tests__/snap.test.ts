@@ -904,7 +904,7 @@ describe("interval + useDate", () => {
   const col = t.getChild("a");
   //    ^? q.Column<IntervalType<f.IntervalUnit_>, { readonly useDate: true; }, false>
   const val = col.at(0);
-  //    ^? Date
+  //    ^? Float64Array<ArrayBufferLike>
   test("at(0)", () =>
     expect(val?.constructor.name).toMatchInlineSnapshot(`"Float64Array"`));
 });

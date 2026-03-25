@@ -198,17 +198,13 @@ type _TsWithTz = Expect<
   Equal<Scalar<d.TimestampType<0, "UTC">, { useDate: true }>, Date>
 >;
 
-// -- Interval × useDate -------------------------------------------------------
+// -- Interval — always Float64Array (month-day-nano triple) ------------------
 
-type _IntervalDefault = Expect<Equal<Scalar<d.IntervalType, {}>, number>>;
-type _IntervalTrue = Expect<
-  Equal<Scalar<d.IntervalType, { useDate: true }>, Date>
+type _IntervalDefault = Expect<
+  Equal<Scalar<d.IntervalType, {}>, Float64Array>
 >;
-type _IntervalFalse = Expect<
-  Equal<Scalar<d.IntervalType, { useDate: false }>, number>
->;
-type _IntervalBool = Expect<
-  Equal<Scalar<d.IntervalType, { useDate: boolean }>, Date | number>
+type _IntervalDate = Expect<
+  Equal<Scalar<d.IntervalType, { useDate: true }>, Float64Array>
 >;
 
 // -- Duration × useBigInt -----------------------------------------------------

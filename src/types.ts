@@ -57,11 +57,9 @@ export type Scalar<
       number,
       Options extends { useDate: infer UseDate } ? UseDate : false
     >
-  : T extends d.IntervalType ? ResolveExtractionOption<
-      Date,
-      number,
-      Options extends { useDate: infer UseDate } ? UseDate : false
-    >
+  // Interval returns Float64Array (month-day-nano triple), not Date/number.
+  // No extraction option affects it.
+  : T extends d.IntervalType ? Float64Array
   : T extends d.ListType<infer Child> ? ListScalar<Child["type"], Options>
   : T extends d.FixedSizeListType<infer Child> ? {
       [K in keyof Child]: Scalar<Child[K]["type"], Options>;
