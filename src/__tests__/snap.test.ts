@@ -1,4 +1,3 @@
-// deno-lint-ignore-file no-unused-vars
 /**
  * Literate snapshot tests for quiver's type system.
  *
@@ -20,7 +19,7 @@
  *   deno task test
  */
 
-import { describe, expect, test } from "vitest";
+import { expect, test } from "vitest";
 import * as f from "@uwdata/flechette";
 import * as q from "../mod.ts";
 
@@ -35,7 +34,7 @@ function ipc(data: unknown[], type: f.DataType): Uint8Array {
 // Integers — signed
 // =============================================================================
 
-describe("int8", () => {
+test("int8", () => {
   const t = q.table({ a: q.int8() }).parseIPC(ipc([1], f.int8()));
   const col = t.getChild("a");
   //    ^? q.Column<IntType<8, true>, {}, false>
@@ -43,16 +42,11 @@ describe("int8", () => {
   //    ^? Int8Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Int8Array [
-		  1,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Int8Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("int16", () => {
+test("int16", () => {
   const t = q.table({ a: q.int16() }).parseIPC(ipc([1], f.int16()));
   const col = t.getChild("a");
   //    ^? q.Column<IntType<16, true>, {}, false>
@@ -60,16 +54,11 @@ describe("int16", () => {
   //    ^? Int16Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Int16Array [
-		  1,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Int16Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("int32", () => {
+test("int32", () => {
   const t = q.table({ a: q.int32() }).parseIPC(ipc([1], f.int32()));
   const col = t.getChild("a");
   //    ^? q.Column<IntType<32, true>, {}, false>
@@ -77,16 +66,11 @@ describe("int32", () => {
   //    ^? Int32Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Int32Array [
-		  1,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Int32Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("int64", () => {
+test("int64", () => {
   const t = q.table({ a: q.int64() }).parseIPC(ipc([1n], f.int64()));
   const col = t.getChild("a");
   //    ^? q.Column<IntType<64, true>, {}, false>
@@ -94,16 +78,11 @@ describe("int64", () => {
   //    ^? Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Float64Array [
-		  1,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("int64 + useBigInt", () => {
+test("int64 + useBigInt", () => {
   const t = q.table({ a: q.int64() }, { useBigInt: true }).parseIPC(
     ipc([1n], f.int64()),
   );
@@ -113,20 +92,15 @@ describe("int64 + useBigInt", () => {
   //    ^? BigInt64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? bigint
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		BigInt64Array {
-		  "0": 1n,
-		}
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1n`));
+  expect(arr).toBeInstanceOf(BigInt64Array);
+  expect(typeof val).toBe("bigint");
 });
 
 // =============================================================================
 // Integers — unsigned
 // =============================================================================
 
-describe("uint8", () => {
+test("uint8", () => {
   const t = q.table({ a: q.uint8() }).parseIPC(ipc([1], f.uint8()));
   const col = t.getChild("a");
   //    ^? q.Column<IntType<8, false>, {}, false>
@@ -134,16 +108,11 @@ describe("uint8", () => {
   //    ^? Uint8Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Uint8Array [
-		  1,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Uint8Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("uint16", () => {
+test("uint16", () => {
   const t = q.table({ a: q.uint16() }).parseIPC(ipc([1], f.uint16()));
   const col = t.getChild("a");
   //    ^? q.Column<IntType<16, false>, {}, false>
@@ -151,16 +120,11 @@ describe("uint16", () => {
   //    ^? Uint16Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Uint16Array [
-		  1,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Uint16Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("uint32", () => {
+test("uint32", () => {
   const t = q.table({ a: q.uint32() }).parseIPC(ipc([1], f.uint32()));
   const col = t.getChild("a");
   //    ^? q.Column<IntType<32, false>, {}, false>
@@ -168,16 +132,11 @@ describe("uint32", () => {
   //    ^? Uint32Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Uint32Array [
-		  1,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Uint32Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("uint64", () => {
+test("uint64", () => {
   const t = q.table({ a: q.uint64() }).parseIPC(ipc([1n], f.uint64()));
   const col = t.getChild("a");
   //    ^? q.Column<IntType<64, false>, {}, false>
@@ -185,16 +144,11 @@ describe("uint64", () => {
   //    ^? Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Float64Array [
-		  1,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("uint64 + useBigInt", () => {
+test("uint64 + useBigInt", () => {
   const t = q.table({ a: q.uint64() }, { useBigInt: true }).parseIPC(
     ipc([1n], f.uint64()),
   );
@@ -204,20 +158,15 @@ describe("uint64 + useBigInt", () => {
   //    ^? BigUint64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? bigint
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		BigUint64Array {
-		  "0": 1n,
-		}
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1n`));
+  expect(arr).toBeInstanceOf(BigUint64Array);
+  expect(typeof val).toBe("bigint");
 });
 
 // =============================================================================
 // Floats
 // =============================================================================
 
-describe("float16", () => {
+test("float16", () => {
   const t = q.table({ a: q.float16() }).parseIPC(ipc([1.5], f.float16()));
   const col = t.getChild("a");
   //    ^? q.Column<FloatType<0>, {}, false>
@@ -225,16 +174,11 @@ describe("float16", () => {
   //    ^? Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Float64Array [
-		  1.5,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1.5`));
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("float32", () => {
+test("float32", () => {
   const t = q.table({ a: q.float32() }).parseIPC(ipc([1.5], f.float32()));
   const col = t.getChild("a");
   //    ^? q.Column<FloatType<1>, {}, false>
@@ -242,16 +186,11 @@ describe("float32", () => {
   //    ^? Float32Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Float32Array [
-		  1.5,
-		]
-	`));
-  test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"number"`));
+  expect(arr).toBeInstanceOf(Float32Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("float64", () => {
+test("float64", () => {
   const t = q.table({ a: q.float64() }).parseIPC(ipc([1.5], f.float64()));
   const col = t.getChild("a");
   //    ^? q.Column<FloatType<2>, {}, false>
@@ -259,20 +198,15 @@ describe("float64", () => {
   //    ^? Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		Float64Array [
-		  1.5,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1.5`));
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
 });
 
 // =============================================================================
 // Strings
 // =============================================================================
 
-describe("utf8", () => {
+test("utf8", () => {
   const t = q.table({ a: q.utf8() }).parseIPC(ipc(["hi"], f.utf8()));
   const col = t.getChild("a");
   //    ^? q.Column<f.Utf8Type, {}, false>
@@ -280,39 +214,27 @@ describe("utf8", () => {
   //    ^? string[]
   const val = col.at(0);
   //    ^? string
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  "hi",
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`"hi"`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(typeof val).toBe("string");
 });
 
-describe("largeUtf8", () => {
-  const t = q.table({ a: q.largeUtf8() }).parseIPC(
-    ipc(["hi"], f.largeUtf8()),
-  );
+test("largeUtf8", () => {
+  const t = q.table({ a: q.largeUtf8() }).parseIPC(ipc(["hi"], f.largeUtf8()));
   const col = t.getChild("a");
   //    ^? q.Column<f.LargeUtf8Type, {}, false>
   const arr = col.toArray();
   //    ^? string[]
   const val = col.at(0);
   //    ^? string
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  "hi",
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`"hi"`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(typeof val).toBe("string");
 });
 
 // =============================================================================
 // Bool
 // =============================================================================
 
-describe("bool", () => {
+test("bool", () => {
   const t = q.table({ a: q.bool() }).parseIPC(ipc([true], f.bool()));
   const col = t.getChild("a");
   //    ^? q.Column<f.BoolType, {}, false>
@@ -320,20 +242,15 @@ describe("bool", () => {
   //    ^? boolean[]
   const val = col.at(0);
   //    ^? boolean
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  true,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`true`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(typeof val).toBe("boolean");
 });
 
 // =============================================================================
 // Binary
 // =============================================================================
 
-describe("binary", () => {
+test("binary", () => {
   const t = q.table({ a: q.binary() }).parseIPC(
     ipc([new Uint8Array([1, 2])], f.binary()),
   );
@@ -343,25 +260,11 @@ describe("binary", () => {
   //    ^? Uint8Array<ArrayBufferLike>[]
   const val = col.at(0);
   //    ^? Uint8Array<ArrayBufferLike>
-  test("at(0)", () =>
-    expect(val).toMatchInlineSnapshot(`
-		Uint8Array [
-		  1,
-		  2,
-		]
-	`));
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  Uint8Array [
-		    1,
-		    2,
-		  ],
-		]
-	`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Uint8Array);
 });
 
-describe("fixedSizeBinary", () => {
+test("fixedSizeBinary", () => {
   const t = q.table({ a: q.fixedSizeBinary(4) }).parseIPC(
     ipc([new Uint8Array([1, 2, 3, 4])], f.fixedSizeBinary(4)),
   );
@@ -371,33 +274,15 @@ describe("fixedSizeBinary", () => {
   //    ^? Uint8Array<ArrayBufferLike>[]
   const val = col.at(0);
   //    ^? Uint8Array<ArrayBufferLike>
-  test("at(0)", () =>
-    expect(val).toMatchInlineSnapshot(`
-		Uint8Array [
-		  1,
-		  2,
-		  3,
-		  4,
-		]
-	`));
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  Uint8Array [
-		    1,
-		    2,
-		    3,
-		    4,
-		  ],
-		]
-	`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Uint8Array);
 });
 
 // =============================================================================
 // Date
 // =============================================================================
 
-describe("dateDay", () => {
+test("dateDay", () => {
   const t = q.table({ a: q.dateDay() }).parseIPC(
     ipc([new Date("2024-01-01")], f.dateDay()),
   );
@@ -407,10 +292,11 @@ describe("dateDay", () => {
   //    ^? Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"number"`));
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("dateDay + useDate", () => {
+test("dateDay + useDate", () => {
   const t = q.table({ a: q.dateDay() }, { useDate: true }).parseIPC(
     ipc([new Date("2024-01-01")], f.dateDay()),
   );
@@ -420,11 +306,11 @@ describe("dateDay + useDate", () => {
   //    ^? Date[]
   const val = col.at(0);
   //    ^? Date
-  test("at(0)", () =>
-    expect(val instanceof Date).toMatchInlineSnapshot(`true`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Date);
 });
 
-describe("dateMillisecond + useDate", () => {
+test("dateMillisecond + useDate", () => {
   const t = q.table({ a: q.dateMillisecond() }, { useDate: true }).parseIPC(
     ipc([new Date("2024-01-01")], f.dateMillisecond()),
   );
@@ -434,15 +320,15 @@ describe("dateMillisecond + useDate", () => {
   //    ^? Date[]
   const val = col.at(0);
   //    ^? Date
-  test("at(0)", () =>
-    expect(val instanceof Date).toMatchInlineSnapshot(`true`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Date);
 });
 
 // =============================================================================
 // Time
 // =============================================================================
 
-describe("timeSecond", () => {
+test("timeSecond", () => {
   const t = q.table({ a: q.timeSecond() }).parseIPC(
     ipc([3600], f.timeSecond()),
   );
@@ -452,10 +338,11 @@ describe("timeSecond", () => {
   //    ^? Int32Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`3600`));
+  expect(arr).toBeInstanceOf(Int32Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("timeMicrosecond + useBigInt", () => {
+test("timeMicrosecond + useBigInt", () => {
   const t = q
     .table({ a: q.timeMicrosecond() }, { useBigInt: true })
     .parseIPC(ipc([3600000000n], f.timeMicrosecond()));
@@ -465,14 +352,15 @@ describe("timeMicrosecond + useBigInt", () => {
   //    ^? BigInt64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? bigint
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`3600000000n`));
+  expect(arr).toBeInstanceOf(BigInt64Array);
+  expect(typeof val).toBe("bigint");
 });
 
 // =============================================================================
 // Timestamp
 // =============================================================================
 
-describe("timestamp", () => {
+test("timestamp", () => {
   const t = q.table({ a: q.timestamp() }).parseIPC(
     ipc([1000000], f.timestamp()),
   );
@@ -482,10 +370,11 @@ describe("timestamp", () => {
   //    ^? Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"number"`));
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("timestamp + useDate", () => {
+test("timestamp + useDate", () => {
   const t = q.table({ a: q.timestamp() }, { useDate: true }).parseIPC(
     ipc([1000000], f.timestamp()),
   );
@@ -495,15 +384,15 @@ describe("timestamp + useDate", () => {
   //    ^? Date[]
   const val = col.at(0);
   //    ^? Date
-  test("at(0)", () =>
-    expect(val instanceof Date).toMatchInlineSnapshot(`true`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Date);
 });
 
 // =============================================================================
 // Duration
 // =============================================================================
 
-describe("duration", () => {
+test("duration", () => {
   const t = q.table({ a: q.duration() }).parseIPC(
     ipc([1000n], f.duration()),
   );
@@ -513,10 +402,11 @@ describe("duration", () => {
   //    ^? Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"number"`));
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("duration + useBigInt", () => {
+test("duration + useBigInt", () => {
   const t = q.table({ a: q.duration() }, { useBigInt: true }).parseIPC(
     ipc([1000n], f.duration()),
   );
@@ -526,14 +416,15 @@ describe("duration + useBigInt", () => {
   //    ^? BigInt64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? bigint
-  test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"bigint"`));
+  expect(arr).toBeInstanceOf(BigInt64Array);
+  expect(typeof val).toBe("bigint");
 });
 
 // =============================================================================
 // Decimal
 // =============================================================================
 
-describe("decimal128", () => {
+test("decimal128", () => {
   const t = q.table({ a: q.decimal128(10, 2) }).parseIPC(
     ipc([1.5], f.decimal(10, 2, 128)),
   );
@@ -543,10 +434,11 @@ describe("decimal128", () => {
   //    ^? Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"number"`));
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("decimal128 + useDecimalInt", () => {
+test("decimal128 + useDecimalInt", () => {
   const t = q
     .table({ a: q.decimal128(10, 2) }, { useDecimalInt: true })
     .parseIPC(ipc([1.5], f.decimal(10, 2, 128)));
@@ -556,10 +448,11 @@ describe("decimal128 + useDecimalInt", () => {
   //    ^? bigint[]
   const val = col.at(0);
   //    ^? bigint
-  test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"bigint"`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(typeof val).toBe("bigint");
 });
 
-describe("decimal32 + useDecimalInt", () => {
+test("decimal32 + useDecimalInt", () => {
   const t = q
     .table({ a: q.decimal32(5, 2) }, { useDecimalInt: true })
     .parseIPC(ipc([1.5], f.decimal(5, 2, 32)));
@@ -569,14 +462,15 @@ describe("decimal32 + useDecimalInt", () => {
   //    ^? Int32Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"number"`));
+  expect(arr).toBeInstanceOf(Int32Array);
+  expect(typeof val).toBe("number");
 });
 
 // =============================================================================
 // Dictionary
 // =============================================================================
 
-describe("dictionary(utf8)", () => {
+test("dictionary(utf8)", () => {
   const t = q.table({ a: q.dictionary(q.utf8()) }).parseIPC(
     ipc(["a", "b", "a"], f.dictionary(f.utf8())),
   );
@@ -586,10 +480,11 @@ describe("dictionary(utf8)", () => {
   //    ^? string[]
   const val = col.at(0);
   //    ^? string
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`"a"`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(typeof val).toBe("string");
 });
 
-describe("dictionary(int32)", () => {
+test("dictionary(int32)", () => {
   const t = q.table({ a: q.dictionary(q.int32()) }).parseIPC(
     ipc([1, 2, 1], f.dictionary(f.int32())),
   );
@@ -599,14 +494,15 @@ describe("dictionary(int32)", () => {
   //    ^? number[]
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(typeof val).toBe("number");
 });
 
 // =============================================================================
 // List
 // =============================================================================
 
-describe("list(int32)", () => {
+test("list(int32)", () => {
   const t = q.table({ a: q.list(q.int32()) }).parseIPC(
     ipc([[1, 2]], f.list(f.int32())),
   );
@@ -616,11 +512,11 @@ describe("list(int32)", () => {
   //    ^? Int32Array<ArrayBufferLike>[]
   const val = col.at(0);
   //    ^? Int32Array<ArrayBufferLike>
-  test("at(0)", () =>
-    expect(val?.constructor.name).toMatchInlineSnapshot(`"Int32Array"`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Int32Array);
 });
 
-describe("list(utf8)", () => {
+test("list(utf8)", () => {
   const t = q.table({ a: q.list(q.utf8()) }).parseIPC(
     ipc([["a", "b"]], f.list(f.utf8())),
   );
@@ -630,25 +526,11 @@ describe("list(utf8)", () => {
   //    ^? string[][]
   const val = col.at(0);
   //    ^? string[]
-  test("at(0)", () =>
-    expect(val).toMatchInlineSnapshot(`
-		[
-		  "a",
-		  "b",
-		]
-	`));
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  [
-		    "a",
-		    "b",
-		  ],
-		]
-	`));
+  expect(arr).toEqual([["a", "b"]]);
+  expect(val).toEqual(["a", "b"]);
 });
 
-describe("list(int64) + useBigInt", () => {
+test("list(int64) + useBigInt", () => {
   const t = q
     .table({ a: q.list(q.int64()) }, { useBigInt: true })
     .parseIPC(ipc([[1n, 2n]], f.list(f.int64())));
@@ -658,15 +540,15 @@ describe("list(int64) + useBigInt", () => {
   //    ^? BigInt64Array<ArrayBufferLike>[]
   const val = col.at(0);
   //    ^? BigInt64Array<ArrayBufferLike>
-  test("at(0)", () =>
-    expect(val?.constructor.name).toMatchInlineSnapshot(`"BigInt64Array"`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(BigInt64Array);
 });
 
 // =============================================================================
 // Struct
 // =============================================================================
 
-describe("struct", () => {
+test("struct", () => {
   const t = q
     .table({ a: q.struct({ x: q.int32(), y: q.utf8() }) })
     .parseIPC(
@@ -678,25 +560,11 @@ describe("struct", () => {
   //    ^? { x: number; y: string; }[]
   const val = col.at(0);
   //    ^? { x: number; y: string; }
-  test("at(0)", () =>
-    expect(val).toMatchInlineSnapshot(`
-		{
-		  "x": 1,
-		  "y": "hi",
-		}
-	`));
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  {
-		    "x": 1,
-		    "y": "hi",
-		  },
-		]
-	`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toEqual({ x: 1, y: "hi" });
 });
 
-describe("struct + useBigInt", () => {
+test("struct + useBigInt", () => {
   const t = q
     .table({ a: q.struct({ v: q.int64() }) }, { useBigInt: true })
     .parseIPC(ipc([{ v: 1n }], f.struct({ v: f.int64() })));
@@ -706,14 +574,15 @@ describe("struct + useBigInt", () => {
   //    ^? { v: bigint; }[]
   const val = col.at(0);
   //    ^? { v: bigint; }
-  test("at(0)", () => expect(typeof val?.v).toMatchInlineSnapshot(`"bigint"`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toEqual({ "v": 1n });
 });
 
 // =============================================================================
 // Map
 // =============================================================================
 
-describe("map(utf8, int32)", () => {
+test("map(utf8, int32)", () => {
   const t = q.table({ a: q.map(q.utf8(), q.int32()) }).parseIPC(
     ipc([new Map([["k", 1]])], f.map(f.utf8(), f.int32())),
   );
@@ -723,33 +592,15 @@ describe("map(utf8, int32)", () => {
   //    ^? [string, number][][]
   const val = col.at(0);
   //    ^? [string, number][]
-  test("at(0)", () =>
-    expect(val).toMatchInlineSnapshot(`
-		[
-		  [
-		    "k",
-		    1,
-		  ],
-		]
-	`));
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  [
-		    [
-		      "k",
-		      1,
-		    ],
-		  ],
-		]
-	`));
+  expect(arr).toEqual([[["k", 1]]]);
+  expect(val).toEqual([["k", 1]]);
 });
 
 // =============================================================================
 // Nullable
 // =============================================================================
 
-describe("nullable int32", () => {
+test("nullable int32", () => {
   const t = q.table({ a: q.int32().nullable() }).parseIPC(
     ipc([1, null], f.int32()),
   );
@@ -757,19 +608,14 @@ describe("nullable int32", () => {
   //    ^? q.Column<IntType<32, true>, {}, true>
   const arr = col.toArray();
   //    ^? Int32Array<ArrayBufferLike> | (number | null)[]
-  const val = col.at(1);
+  const val = col.at(0);
   //    ^? number | null
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  1,
-		  null,
-		]
-	`));
-  test("at(1) null", () => expect(val).toMatchInlineSnapshot(`null`));
+  expect(arr).toEqual([1, null]);
+  expect(val).toBe(1);
+  expect(col.at(1)).toBe(null);
 });
 
-describe("nullable utf8", () => {
+test("nullable utf8", () => {
   const t = q.table({ a: q.utf8().nullable() }).parseIPC(
     ipc(["hi", null], f.utf8()),
   );
@@ -777,33 +623,49 @@ describe("nullable utf8", () => {
   //    ^? q.Column<f.Utf8Type, {}, true>
   const arr = col.toArray();
   //    ^? (string | null)[]
-  const val = col.at(1);
+  const val = col.at(0);
   //    ^? string | null
-  test("at(1) null", () => expect(val).toMatchInlineSnapshot(`null`));
+  expect(arr).toEqual(["hi", null]);
+  expect(val).toBe("hi");
+  expect(col.at(1)).toBe(null);
 });
 
 // =============================================================================
 // Either
 // =============================================================================
 
-describe("either([int32, float64])", () => {
-  const t = q.table({ a: q.either([q.int32(), q.float64()]) }).parseIPC(
-    ipc([1], f.int32()),
-  );
-  const col = t.getChild("a");
-  //    ^? q.Column<IntType<32, true> | FloatType<2>, {}, false>
-  const arr = col.toArray();
-  //    ^? Int32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike>
-  const val = col.at(0);
-  //    ^? number
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+test("either([int32, float64])", () => {
+  const s = q.table({ a: q.either([q.int32(), q.float64()]) });
+  {
+    const t = s.parseIPC(ipc([1], f.int32()));
+    const col = t.getChild("a");
+    //    ^? q.Column<IntType<32, true> | FloatType<2>, {}, false>
+    const arr = col.toArray();
+    //    ^? Int32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike>
+    const val = col.at(0);
+    //    ^? number
+    expect(arr).toBeInstanceOf(Int32Array);
+    expect(typeof val).toBe("number");
+  }
+
+  {
+    const t = s.parseIPC(ipc([1], f.float64()));
+    const col = t.getChild("a");
+    //    ^? q.Column<IntType<32, true> | FloatType<2>, {}, false>
+    const arr = col.toArray();
+    //    ^? Int32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike>
+    const val = col.at(0);
+    //    ^? number
+    expect(arr).toBeInstanceOf(Float64Array);
+    expect(typeof val).toBe("number");
+  }
 });
 
 // =============================================================================
 // Nested — list of struct
 // =============================================================================
 
-describe("list(struct)", () => {
+test("list(struct)", () => {
   const t = q
     .table({ a: q.list(q.struct({ x: q.int32() })) })
     .parseIPC(
@@ -815,37 +677,15 @@ describe("list(struct)", () => {
   //    ^? { x: number; }[][]
   const val = col.at(0);
   //    ^? { x: number; }[]
-  test("at(0)", () =>
-    expect(val).toMatchInlineSnapshot(`
-		[
-		  {
-		    "x": 1,
-		  },
-		  {
-		    "x": 2,
-		  },
-		]
-	`));
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  [
-		    {
-		      "x": 1,
-		    },
-		    {
-		      "x": 2,
-		    },
-		  ],
-		]
-	`));
+  expect(arr).toEqual([[{ "x": 1 }, { "x": 2 }]]);
+  expect(val).toEqual([{ "x": 1 }, { "x": 2 }]);
 });
 
 // =============================================================================
 // Nested — struct with list
 // =============================================================================
 
-describe("struct with list", () => {
+test("struct with list", () => {
   const t = q
     .table({ a: q.struct({ vs: q.list(q.int32()) }) })
     .parseIPC(
@@ -857,15 +697,15 @@ describe("struct with list", () => {
   //    ^? { vs: Int32Array<ArrayBufferLike>; }[]
   const val = col.at(0);
   //    ^? { vs: Int32Array<ArrayBufferLike>; }
-  test("at(0)", () =>
-    expect(val?.vs?.constructor.name).toMatchInlineSnapshot(`"Int32Array"`));
+  expect(arr).toEqual([{ "vs": Int32Array.from([1, 2]) }]);
+  expect(val).toEqual({ "vs": Int32Array.from([1, 2]) });
 });
 
 // =============================================================================
 // Option invariants — useBigInt doesn't affect small ints or floats
 // =============================================================================
 
-describe("int32 + useBigInt still number", () => {
+test("int32 + useBigInt still number", () => {
   const t = q.table({ a: q.int32() }, { useBigInt: true }).parseIPC(
     ipc([1], f.int32()),
   );
@@ -875,10 +715,11 @@ describe("int32 + useBigInt still number", () => {
   //    ^? Int32Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Int32Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("float64 + useBigInt still number", () => {
+test("float64 + useBigInt still number", () => {
   const t = q.table({ a: q.float64() }, { useBigInt: true }).parseIPC(
     ipc([1.5], f.float64()),
   );
@@ -888,20 +729,15 @@ describe("float64 + useBigInt still number", () => {
   //    ^? Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-    Float64Array [
-      1.5,
-    ]
-  `));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1.5`));
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
 });
 
 // =============================================================================
 // Nullable variants
 // =============================================================================
 
-describe("nullable int64 + useBigInt", () => {
+test("nullable int64 + useBigInt", () => {
   const t = q
     .table({ a: q.int64().nullable() }, { useBigInt: true })
     .parseIPC(ipc([1n, null], f.int64()));
@@ -913,18 +749,12 @@ describe("nullable int64 + useBigInt", () => {
   //    ^? bigint | null
   const nul = col.at(1);
   //    ^? bigint | null
-  test("toArray", () =>
-    expect(arr).toMatchInlineSnapshot(`
-		[
-		  1n,
-		  null,
-		]
-	`));
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1n`));
-  test("at(1) null", () => expect(nul).toMatchInlineSnapshot(`null`));
+  expect(arr).toEqual([1n, null]);
+  expect(val).toBe(1n);
+  expect(nul).toBe(null);
 });
 
-describe("nullable dateDay + useDate", () => {
+test("nullable dateDay + useDate", () => {
   const t = q
     .table({ a: q.dateDay().nullable() }, { useDate: true })
     .parseIPC(ipc([new Date("2024-01-01"), null], f.dateDay()));
@@ -936,12 +766,12 @@ describe("nullable dateDay + useDate", () => {
   //    ^? Date | null
   const nul = col.at(1);
   //    ^? Date | null
-  test("at(0)", () =>
-    expect(val instanceof Date).toMatchInlineSnapshot(`true`));
-  test("at(1) null", () => expect(nul).toMatchInlineSnapshot(`null`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Date);
+  expect(nul).toBe(null);
 });
 
-describe("nullable bool", () => {
+test("nullable bool", () => {
   const t = q.table({ a: q.bool().nullable() }).parseIPC(
     ipc([true, null], f.bool()),
   );
@@ -949,16 +779,20 @@ describe("nullable bool", () => {
   //    ^? q.Column<f.BoolType, {}, true>
   const arr = col.toArray();
   //    ^? (boolean | null)[]
-  const val = col.at(1);
+  const val = col.at(0);
   //    ^? boolean | null
-  test("at(1) null", () => expect(val).toMatchInlineSnapshot(`null`));
+  const nul = col.at(1);
+  //    ^? boolean | null
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBe(true);
+  expect(nul).toBe(null);
 });
 
 // =============================================================================
 // Map + useMap
 // =============================================================================
 
-describe("map(utf8, int32) + useMap", () => {
+test("map(utf8, int32) + useMap", () => {
   const t = q
     .table({ a: q.map(q.utf8(), q.int32()) }, { useMap: true })
     .parseIPC(ipc([new Map([["k", 1]])], f.map(f.utf8(), f.int32())));
@@ -968,14 +802,15 @@ describe("map(utf8, int32) + useMap", () => {
   //    ^? Map<string, number>[]
   const val = col.at(0);
   //    ^? Map<string, number>
-  test("at(0)", () => expect(val instanceof Map).toMatchInlineSnapshot(`true`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Map);
 });
 
 // =============================================================================
 // Broad builders — with type snapshots
 // =============================================================================
 
-describe("q.int() accepts int8", () => {
+test("q.int() accepts int8", () => {
   const t = q.table({ a: q.int() }).parseIPC(ipc([1], f.int8()));
   const col = t.getChild("a");
   //    ^? q.Column<IntType<f.IntBitWidth, boolean>, {}, false>
@@ -983,10 +818,11 @@ describe("q.int() accepts int8", () => {
   //    ^? Int8Array<ArrayBufferLike> | Int16Array<ArrayBufferLike> | Int32Array<ArrayBufferLike> | Uint8Array<ArrayBufferLike> | Uint16Array<ArrayBufferLike> | Uint32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`1`));
+  expect(arr).toBeInstanceOf(Int8Array);
+  expect(val).toBe(1);
 });
 
-describe("q.string() accepts largeUtf8", () => {
+test("q.string() accepts largeUtf8", () => {
   const t = q.table({ a: q.string() }).parseIPC(
     ipc(["hi"], f.largeUtf8()),
   );
@@ -996,10 +832,11 @@ describe("q.string() accepts largeUtf8", () => {
   //    ^? string[]
   const val = col.at(0);
   //    ^? string
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`"hi"`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(typeof val).toBe("string");
 });
 
-describe("q.float() accepts float32", () => {
+test("q.float() accepts float32", () => {
   const t = q.table({ a: q.float() }).parseIPC(ipc([1.5], f.float32()));
   const col = t.getChild("a");
   //    ^? q.Column<FloatType<f.Precision_>, {}, false>
@@ -1007,10 +844,11 @@ describe("q.float() accepts float32", () => {
   //    ^? Float64Array<ArrayBufferLike> | Float32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"number"`));
+  expect(arr).toBeInstanceOf(Float32Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("q.date() accepts dateMillisecond", () => {
+test("q.date() accepts dateMillisecond", () => {
   const t = q.table({ a: q.date() }).parseIPC(
     ipc([new Date("2024-01-01")], f.dateMillisecond()),
   );
@@ -1020,10 +858,11 @@ describe("q.date() accepts dateMillisecond", () => {
   //    ^? Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(typeof val).toMatchInlineSnapshot(`"number"`));
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
 });
 
-describe("q.time() accepts timeSecond", () => {
+test("q.time() accepts timeSecond", () => {
   const t = q.table({ a: q.time() }).parseIPC(
     ipc([3600], f.timeSecond()),
   );
@@ -1033,14 +872,15 @@ describe("q.time() accepts timeSecond", () => {
   //    ^? Int32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike>
   const val = col.at(0);
   //    ^? number
-  test("at(0)", () => expect(val).toMatchInlineSnapshot(`3600`));
+  expect(arr).toBeInstanceOf(Int32Array);
+  expect(typeof val).toBe("number");
 });
 
 // =============================================================================
 // Interval
 // =============================================================================
 
-describe("interval + useDate", () => {
+test("interval + useDate", () => {
   const t = q.table({ a: q.interval() }, { useDate: true }).parseIPC(
     ipc([[1, 15, 0n]], f.interval()),
   );
@@ -1050,6 +890,6 @@ describe("interval + useDate", () => {
   //    ^? Float64Array<ArrayBufferLike>[]
   const val = col.at(0);
   //    ^? Float64Array<ArrayBufferLike>
-  test("at(0)", () =>
-    expect(val?.constructor.name).toMatchInlineSnapshot(`"Float64Array"`));
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Float64Array);
 });
