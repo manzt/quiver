@@ -5,6 +5,7 @@
     "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/path@^1.1.4": "1.1.4",
     "npm:@uwdata/flechette@^2.3.0": "2.3.0",
+    "npm:magic-string@0.30": "0.30.21",
     "npm:typescript@^6.0.2": "6.0.2",
     "npm:vitest@^4.1.1": "4.1.1_vite@8.0.2"
   },
@@ -405,7 +406,7 @@
     "tinyexec@1.0.4": {
       "integrity": "sha512-u9r3uZC0bdpGOXtlxUIdwf9pkmvhqJdrVCH9fapQtgy/OeTTMZ1nqH7agtvEfmGui6e1XxjcdrlxvxJvc3sMqw=="
     },
-    "tinyglobby@0.2.15": {
+    "tinyglobby@0.2.15_picomatch@4.0.4": {
       "integrity": "sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==",
       "dependencies": [
         "fdir",
@@ -476,6 +477,7 @@
       "jsr:@std/assert@^1.0.19",
       "jsr:@std/path@^1.1.4",
       "npm:@uwdata/flechette@^2.3.0",
+      "npm:magic-string@0.30",
       "npm:typescript@^6.0.2",
       "npm:vitest@^4.1.1"
     ]

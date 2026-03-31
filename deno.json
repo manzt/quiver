@@ -5,11 +5,11 @@
   "license": "MIT",
   "nodeModulesDir": "auto",
   "test": {
-    "exclude": ["src/__tests__/snap.test.ts"]
+    "exclude": ["src/__tests__/snap.test.ts", "src/__tests__/vitest-setup.ts"]
   },
   "tasks": {
-    "test": "deno test && deno run -A vitest run src/__tests__/snap.test.ts && deno run -A scripts/snap.ts src/__tests__/snap.test.ts",
-    "test:update": "deno run -A vitest run src/__tests__/snap.test.ts --update && deno run -A scripts/snap.ts --update src/__tests__/snap.test.ts"
+    "test": "deno test && deno run -A vitest run src/__tests__/snap.test.ts",
+    "test:update": "deno run -A vitest run src/__tests__/snap.test.ts --update"
   },
   "lint": {
     "rules": {
@@ -20,6 +20,7 @@
     "@std/assert": "jsr:@std/assert@^1.0.19",
     "@std/path": "jsr:@std/path@^1.1.4",
     "@uwdata/flechette": "npm:@uwdata/flechette@^2.3.0",
+    "magic-string": "npm:magic-string@^0.30.0",
     "typescript": "npm:typescript@^6.0.2",
     "vitest": "npm:vitest@^4.1.1"
   }
