@@ -5,11 +5,11 @@
   "license": "MIT",
   "nodeModulesDir": "auto",
   "test": {
-    "exclude": ["src/__tests__/snap.test.ts", "src/__tests__/vitest-setup.ts"]
+    "exclude": ["src/__tests__/*"]
   },
   "tasks": {
-    "test": "deno test && deno run -A vitest run src/__tests__/snap.test.ts",
-    "test:update": "deno run -A vitest run src/__tests__/snap.test.ts --update"
+    "test": "deno run -A vitest run",
+    "test:update": "deno run -A vitest run --update"
   },
   "lint": {
     "rules": {

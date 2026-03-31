@@ -19,6 +19,7 @@
  */
 
 import { expect, test } from "vitest";
+import { expectType } from "tintype";
 
 import * as f from "@uwdata/flechette";
 import * as q from "../mod.ts";
@@ -30,6 +31,14 @@ function ipc(data: unknown[], type: f.DataType): Uint8Array {
   return bytes;
 }
 
+/** Type-only mock for schemas that can't round-trip through IPC. */
+function tableMock<T>(_schema: { parseIPC: (...args: any[]) => T }): T {
+  const proxy: unknown = new Proxy(() => proxy, {
+    get: () => proxy,
+    apply: () => proxy,
+  });
+  return proxy as T;
+}
 
 // =============================================================================
 // Integers — signed
@@ -987,6 +996,22 @@ test("q.time() accepts timeSecond", () => {
 // Interval
 // =============================================================================
 
+test("interval", () => {
+  const t = q.table({ a: q.interval() }).parseIPC(
+    ipc([[1, 15, 0n]], f.interval()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<IntervalType<f.IntervalUnit_>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Float64Array<ArrayBufferLike>[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`Float64Array<ArrayBufferLike>`);
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Float64Array);
+});
+
 test("interval + useDate", () => {
   const t = q.table({ a: q.interval() }, { useDate: true }).parseIPC(
     ipc([[1, 15, 0n]], f.interval()),
@@ -1001,4 +1026,511 @@ test("interval + useDate", () => {
   expectType(val).toMatchInlineSnapshot(`Float64Array<ArrayBufferLike>`);
   expect(arr).toBeInstanceOf(Array);
   expect(val).toBeInstanceOf(Float64Array);
+});
+
+// =============================================================================
+// Missing string/binary variants
+// =============================================================================
+
+// flechette cannot build View types via tableFromArrays, so these
+// test type inference only (no IPC round-trip).
+
+test("utf8View", () => {
+  const t = tableMock(q.table({ a: q.utf8View() }));
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(`q.Column<f.Utf8ViewType, {}, false>`);
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`string[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`string`);
+});
+
+test("binaryView", () => {
+  const t = tableMock(q.table({ a: q.binaryView() }));
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<f.BinaryViewType, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Uint8Array<ArrayBufferLike>[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`Uint8Array<ArrayBufferLike>`);
+});
+
+test("largeBinary", () => {
+  const t = q.table({ a: q.largeBinary() }).parseIPC(
+    ipc([new Uint8Array([1, 2])], f.largeBinary()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<f.LargeBinaryType, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Uint8Array<ArrayBufferLike>[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`Uint8Array<ArrayBufferLike>`);
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Uint8Array);
+});
+
+// =============================================================================
+// Missing time variants
+// =============================================================================
+
+test("timeMillisecond", () => {
+  const t = q.table({ a: q.timeMillisecond() }).parseIPC(
+    ipc([1000], f.timeMillisecond()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<TimeType<32, f.TimeUnit_>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(arr).toBeInstanceOf(Int32Array);
+  expect(typeof val).toBe("number");
+});
+
+test("timeNanosecond", () => {
+  const t = q.table({ a: q.timeNanosecond() }).parseIPC(
+    ipc([1000000000n], f.timeNanosecond()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<TimeType<64, f.TimeUnit_>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Float64Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
+});
+
+test("timeNanosecond + useBigInt", () => {
+  const t = q.table({ a: q.timeNanosecond() }, { useBigInt: true }).parseIPC(
+    ipc([1000000000n], f.timeNanosecond()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<TimeType<64, f.TimeUnit_>, { readonly useBigInt: true; }, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`BigInt64Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`bigint`);
+  expect(arr).toBeInstanceOf(BigInt64Array);
+  expect(typeof val).toBe("bigint");
+});
+
+test("timeMicrosecond", () => {
+  const t = q.table({ a: q.timeMicrosecond() }).parseIPC(
+    ipc([1000000n], f.timeMicrosecond()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<TimeType<64, f.TimeUnit_>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Float64Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
+});
+
+// =============================================================================
+// Missing date/timestamp combos
+// =============================================================================
+
+test("dateMillisecond", () => {
+  const t = q.table({ a: q.dateMillisecond() }).parseIPC(
+    ipc([new Date("2024-01-01")], f.dateMillisecond()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<DateType<1>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Float64Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
+});
+
+test("timestamp + useDate + timezone", () => {
+  const t = q
+    .table({ a: q.timestamp(undefined, "UTC") }, { useDate: true })
+    .parseIPC(ipc([new Date("2024-01-01")], f.timestamp(undefined, "UTC")));
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<TimestampType<f.TimeUnit_, string | null>, { readonly useDate: true; }, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Date[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`Date`);
+  expect(val).toBeInstanceOf(Date);
+});
+
+// =============================================================================
+// Missing decimal variants
+// =============================================================================
+
+test("decimal32", () => {
+  const t = q.table({ a: q.decimal32(7, 2) }).parseIPC(
+    ipc([1.23], f.decimal32(7, 2)),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<DecimalType<32>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Float64Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
+});
+
+test("decimal64", () => {
+  const t = q.table({ a: q.decimal64(18, 2) }).parseIPC(
+    ipc([1.23], f.decimal64(18, 2)),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<DecimalType<64>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Float64Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
+});
+
+test("decimal64 + useDecimalInt", () => {
+  const t = q
+    .table({ a: q.decimal64(18, 2) }, { useDecimalInt: true })
+    .parseIPC(ipc([1.23], f.decimal64(18, 2)));
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<DecimalType<64>, { readonly useDecimalInt: true; }, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`bigint[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`bigint`);
+});
+
+test("decimal256", () => {
+  const t = q.table({ a: q.decimal256(38, 2) }).parseIPC(
+    ipc([1.23], f.decimal256(38, 2)),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<DecimalType<256>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Float64Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(arr).toBeInstanceOf(Float64Array);
+  expect(typeof val).toBe("number");
+});
+
+test("decimal256 + useDecimalInt", () => {
+  const t = q
+    .table({ a: q.decimal256(38, 2) }, { useDecimalInt: true })
+    .parseIPC(ipc([1.23], f.decimal256(38, 2)));
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<DecimalType<256>, { readonly useDecimalInt: true; }, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`bigint[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`bigint`);
+});
+
+// =============================================================================
+// Null type
+// =============================================================================
+
+test("nullType", () => {
+  const t = q.table({ a: q.nullType() }).parseIPC(
+    ipc([null, null], f.nullType()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(`q.Column<f.NullType, {}, false>`);
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`null[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`null`);
+  expect(val).toBe(null);
+});
+
+// =============================================================================
+// Missing list variants
+// =============================================================================
+
+test("fixedSizeList(int32, 3)", () => {
+  const t = q.table({ a: q.fixedSizeList(q.int32(), 3) }).parseIPC(
+    ipc([[1, 2, 3]], f.fixedSizeList(f.int32(), 3)),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<FixedSizeListType<[q.Field<string, IntType<32, true>>]>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`[number][]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`[number]`);
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Int32Array);
+});
+
+test("largeList(int32)", () => {
+  const t = q.table({ a: q.largeList(q.int32()) }).parseIPC(
+    ipc([[1, 2]], f.largeList(f.int32())),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<LargeListType<q.Field<string, IntType<32, true>>>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>`);
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Int32Array);
+});
+
+test("listView(int32)", () => {
+  // flechette cannot build View types via tableFromArrays
+  const t = tableMock(q.table({ a: q.listView(q.int32()) }));
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<ListViewType<q.Field<string, IntType<32, true>>>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>`);
+});
+
+test("largeListView(int32)", () => {
+  // flechette cannot build View types via tableFromArrays
+  const t = tableMock(q.table({ a: q.largeListView(q.int32()) }));
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<LargeListViewType<q.Field<string, IntType<32, true>>>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>[]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>`);
+});
+
+test("list(list(int32))", () => {
+  const t = q.table({ a: q.list(q.list(q.int32())) }).parseIPC(
+    ipc([[[1, 2], [3]]], f.list(f.list(f.int32()))),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<ListType<q.Field<string, ListType<q.Field<string, IntType<32, true>>>>>, {}, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>[][]`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>[]`);
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Array);
+});
+
+// =============================================================================
+// Nested struct
+// =============================================================================
+
+test("nested struct", () => {
+  const t = q
+    .table({ a: q.struct({ inner: q.struct({ val: q.int32() }) }) })
+    .parseIPC(
+      ipc(
+        [{ inner: { val: 42 } }],
+        f.struct({ inner: f.struct({ val: f.int32() }) }),
+      ),
+    );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<StructType<q.Field<"inner", StructType<q.Field<"val", IntType<32, true>>[]>>[]>, {}, false>`,
+  );
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`{ inner: { val: number; }; }`);
+  expect(val).toEqual({ inner: { val: 42 } });
+});
+
+// =============================================================================
+// Option isolation — options that should NOT affect certain types
+// =============================================================================
+
+test("int8 + useBigInt still number", () => {
+  const t = q.table({ a: q.int8() }, { useBigInt: true }).parseIPC(
+    ipc([1], f.int8()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<IntType<8, true>, { readonly useBigInt: true; }, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Int8Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(arr).toBeInstanceOf(Int8Array);
+  expect(typeof val).toBe("number");
+});
+
+test("uint16 + useBigInt still number", () => {
+  const t = q.table({ a: q.uint16() }, { useBigInt: true }).parseIPC(
+    ipc([1], f.uint16()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<IntType<16, false>, { readonly useBigInt: true; }, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Uint16Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(arr).toBeInstanceOf(Uint16Array);
+  expect(typeof val).toBe("number");
+});
+
+test("dateDay + useBigInt still number", () => {
+  const t = q.table({ a: q.dateDay() }, { useBigInt: true }).parseIPC(
+    ipc([new Date("2024-01-01")], f.dateDay()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<DateType<0>, { readonly useBigInt: true; }, false>`,
+  );
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(typeof val).toBe("number");
+});
+
+test("timeSecond + useBigInt still number", () => {
+  const t = q.table({ a: q.timeSecond() }, { useBigInt: true }).parseIPC(
+    ipc([3600], f.timeSecond()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<TimeType<32, f.TimeUnit_>, { readonly useBigInt: true; }, false>`,
+  );
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>`);
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(arr).toBeInstanceOf(Int32Array);
+  expect(typeof val).toBe("number");
+});
+
+test("decimal32 + useDecimalInt still number", () => {
+  const t = q
+    .table({ a: q.decimal32(7, 2) }, { useDecimalInt: true })
+    .parseIPC(ipc([1.23], f.decimal32(7, 2)));
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<DecimalType<32>, { readonly useDecimalInt: true; }, false>`,
+  );
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number`);
+  expect(typeof val).toBe("number");
+});
+
+// =============================================================================
+// More nullable variants
+// =============================================================================
+
+test("nullable float64", () => {
+  const t = q.table({ a: q.float64().nullable() }).parseIPC(
+    ipc([1.5, null], f.float64()),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(`q.Column<FloatType<2>, {}, true>`);
+  const arr = col.toArray();
+  expectType(arr).toMatchInlineSnapshot(
+    `Float64Array<ArrayBufferLike> | (number | null)[]`,
+  );
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`number | null`);
+  const nul = col.at(1);
+  expectType(nul).toMatchInlineSnapshot(`number | null`);
+  expect(val).toBe(1.5);
+  expect(nul).toBe(null);
+});
+
+test("nullable timestamp + useDate", () => {
+  const t = q
+    .table({ a: q.timestamp().nullable() }, { useDate: true })
+    .parseIPC(ipc([new Date("2024-01-01"), null], f.timestamp()));
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<TimestampType<f.TimeUnit_, string | null>, { readonly useDate: true; }, true>`,
+  );
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`Date | null`);
+  expect(val).toBeInstanceOf(Date);
+  const nul = col.at(1);
+  expect(nul).toBe(null);
+});
+
+test("nullable list(int32)", () => {
+  const t = q.table({ a: q.list(q.int32()).nullable() }).parseIPC(
+    ipc([[1, 2], null], f.list(f.int32())),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<ListType<q.Field<string, IntType<32, true>>>, {}, true>`,
+  );
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(
+    `Int32Array<ArrayBufferLike> | null`,
+  );
+  expect(val).toBeInstanceOf(Int32Array);
+  const nul = col.at(1);
+  expect(nul).toBe(null);
+});
+
+test("nullable struct", () => {
+  const t = q.table({ a: q.struct({ x: q.int32() }).nullable() }).parseIPC(
+    ipc([{ x: 1 }, null], f.struct({ x: f.int32() })),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<StructType<q.Field<"x", IntType<32, true>>[]>, {}, true>`,
+  );
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`{ x: number; } | null`);
+  expect(val).toEqual({ x: 1 });
+  const nul = col.at(1);
+  expect(nul).toBe(null);
+});
+
+test("nullable dictionary(utf8)", () => {
+  const t = q.table({ a: q.dictionary(q.utf8()).nullable() }).parseIPC(
+    ipc(["hi", null], f.dictionary(f.utf8())),
+  );
+  const col = t.getChild("a");
+  expectType(col).toMatchInlineSnapshot(
+    `q.Column<DictionaryType<f.Utf8Type>, {}, true>`,
+  );
+  const val = col.at(0);
+  expectType(val).toMatchInlineSnapshot(`string | null`);
+  expect(val).toBe("hi");
+  const nul = col.at(1);
+  expect(nul).toBe(null);
 });

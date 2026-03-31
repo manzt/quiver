@@ -1,9 +1,9 @@
 import { defineConfig } from "vitest/config";
-import { typeSnapshots } from "./scripts/vitest-type-snapshots.ts";
+import tintype from "tintype/plugin";
 
 export default defineConfig({
-	plugins: [typeSnapshots()],
-	test: {
-		setupFiles: ["./src/__tests__/vitest-setup.ts"],
-	},
+  plugins: [tintype()],
+  test: {
+    setupFiles: ["tintype/setup"],
+  },
 });
