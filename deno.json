@@ -21,6 +21,7 @@
     "@std/path": "jsr:@std/path@^1.1.4",
     "@uwdata/flechette": "npm:@uwdata/flechette@^2.3.0",
     "magic-string": "npm:magic-string@^0.30.0",
+    "tintype": "npm:tintype@^0.0.0",
     "typescript": "npm:typescript@^6.0.2",
     "vitest": "npm:vitest@^4.1.1"
   }

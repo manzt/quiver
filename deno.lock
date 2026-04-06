@@ -6,6 +6,7 @@
     "jsr:@std/path@^1.1.4": "1.1.4",
     "npm:@uwdata/flechette@^2.3.0": "2.3.0",
     "npm:magic-string@0.30": "0.30.21",
+    "npm:tintype@^0.0.0": "0.0.0_typescript@6.0.2_vitest@4.1.1__vite@8.0.2",
     "npm:typescript@^6.0.2": "6.0.2",
     "npm:vitest@^4.1.1": "4.1.1_vite@8.0.2"
   },
@@ -400,6 +401,14 @@
     "std-env@4.0.0": {
       "integrity": "sha512-zUMPtQ/HBY3/50VbpkupYHbRroTRZJPRLvreamgErJVys0ceuzMkD44J/QjqhHjOzK42GQ3QZIeFG1OYfOtKqQ=="
     },
+    "tintype@0.0.0_typescript@6.0.2_vitest@4.1.1__vite@8.0.2": {
+      "integrity": "sha512-isRzu3phIbzL4F4khb9GHx9+BytlgcB+dW3FolcAQCPrBpIMhI99qVG5fRpVbhqwgEQK7IXEeI/JkP9Z09cokQ==",
+      "dependencies": [
+        "magic-string",
+        "typescript",
+        "vitest"
+      ]
+    },
     "tinybench@2.9.0": {
       "integrity": "sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg=="
     },
@@ -478,6 +487,7 @@
       "jsr:@std/path@^1.1.4",
       "npm:@uwdata/flechette@^2.3.0",
       "npm:magic-string@0.30",
+      "npm:tintype@^0.0.0",
       "npm:typescript@^6.0.2",
       "npm:vitest@^4.1.1"
     ]
