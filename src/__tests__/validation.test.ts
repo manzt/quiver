@@ -4,7 +4,7 @@
 
 import { expect, test } from "vitest";
 import * as f from "@uwdata/flechette";
-import * as q from "../mod.ts";
+import * as q from "../flechette/mod.ts";
 
 /** Build a table, encode to IPC, return bytes. */
 function toIPC(
@@ -426,117 +426,117 @@ test("q.date() accepts dateMillisecond column", () => {
 });
 
 // =============================================================================
-// 6b. JS-type builders — q.js("type")
+// 6b. JS-type builders — q.like("type")
 // =============================================================================
 
-test('q.js("number") accepts int32 column', () => {
+test('q.like("number") accepts int32 column', () => {
   const ipc = toIPC([["x", [1]]], { x: f.int32() });
-  expect(q.table({ x: q.js("number") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("number") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("number") accepts float64 column', () => {
+test('q.like("number") accepts float64 column', () => {
   const ipc = toIPC([["x", [1.0]]], { x: f.float64() });
-  expect(q.table({ x: q.js("number") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("number") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("number") rejects utf8 column', () => {
+test('q.like("number") rejects utf8 column', () => {
   const ipc = toIPC([["x", ["hi"]]], { x: f.utf8() });
-  expect(() => q.table({ x: q.js("number") }).parseIPC(ipc)).toThrow();
+  expect(() => q.table({ x: q.like("number") }).parseIPC(ipc)).toThrow();
 });
 
-test('q.js("bigint") accepts int64 column', () => {
+test('q.like("bigint") accepts int64 column', () => {
   const ipc = toIPC([["x", [1n]]], { x: f.int64() });
-  expect(q.table({ x: q.js("bigint") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("bigint") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("bigint") accepts uint64 column', () => {
+test('q.like("bigint") accepts uint64 column', () => {
   const ipc = toIPC([["x", [1n]]], { x: f.uint64() });
-  expect(q.table({ x: q.js("bigint") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("bigint") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("bigint") rejects int32 column', () => {
+test('q.like("bigint") rejects int32 column', () => {
   const ipc = toIPC([["x", [1]]], { x: f.int32() });
-  expect(() => q.table({ x: q.js("bigint") }).parseIPC(ipc)).toThrow();
+  expect(() => q.table({ x: q.like("bigint") }).parseIPC(ipc)).toThrow();
 });
 
-test('q.js("string") accepts utf8 column', () => {
+test('q.like("string") accepts utf8 column', () => {
   const ipc = toIPC([["x", ["hi"]]], { x: f.utf8() });
-  expect(q.table({ x: q.js("string") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("string") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("string") accepts largeUtf8 column', () => {
+test('q.like("string") accepts largeUtf8 column', () => {
   const ipc = toIPC([["x", ["hi"]]], { x: f.largeUtf8() });
-  expect(q.table({ x: q.js("string") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("string") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("string") rejects int32 column', () => {
+test('q.like("string") rejects int32 column', () => {
   const ipc = toIPC([["x", [1]]], { x: f.int32() });
-  expect(() => q.table({ x: q.js("string") }).parseIPC(ipc)).toThrow();
+  expect(() => q.table({ x: q.like("string") }).parseIPC(ipc)).toThrow();
 });
 
-test('q.js("boolean") accepts bool column', () => {
+test('q.like("boolean") accepts bool column', () => {
   const ipc = toIPC([["x", [true]]], { x: f.bool() });
-  expect(q.table({ x: q.js("boolean") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("boolean") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("boolean") rejects int32 column', () => {
+test('q.like("boolean") rejects int32 column', () => {
   const ipc = toIPC([["x", [1]]], { x: f.int32() });
-  expect(() => q.table({ x: q.js("boolean") }).parseIPC(ipc)).toThrow();
+  expect(() => q.table({ x: q.like("boolean") }).parseIPC(ipc)).toThrow();
 });
 
-test('q.js("bytes") accepts binary column', () => {
+test('q.like("bytes") accepts binary column', () => {
   const ipc = toIPC([["x", [new Uint8Array([1])]]], { x: f.binary() });
-  expect(q.table({ x: q.js("bytes") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("bytes") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("bytes") accepts fixedSizeBinary column', () => {
+test('q.like("bytes") accepts fixedSizeBinary column', () => {
   const ipc = toIPC([["x", [new Uint8Array([1, 2])]]], {
     x: f.fixedSizeBinary(2),
   });
-  expect(q.table({ x: q.js("bytes") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("bytes") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("bytes") rejects utf8 column', () => {
+test('q.like("bytes") rejects utf8 column', () => {
   const ipc = toIPC([["x", ["hi"]]], { x: f.utf8() });
-  expect(() => q.table({ x: q.js("bytes") }).parseIPC(ipc)).toThrow();
+  expect(() => q.table({ x: q.like("bytes") }).parseIPC(ipc)).toThrow();
 });
 
-test('q.js("date") accepts dateDay column', () => {
+test('q.like("date") accepts dateDay column', () => {
   const ipc = toIPC([["x", [new Date("2024-01-01")]]], { x: f.dateDay() });
-  expect(q.table({ x: q.js("date") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("date") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("date") accepts timestamp column', () => {
+test('q.like("date") accepts timestamp column', () => {
   const ipc = toIPC([["x", [1000000]]], { x: f.timestamp() });
-  expect(q.table({ x: q.js("date") }).parseIPC(ipc).numRows).toBe(1);
+  expect(q.table({ x: q.like("date") }).parseIPC(ipc).numRows).toBe(1);
 });
 
-test('q.js("date") rejects int32 column', () => {
+test('q.like("date") rejects int32 column', () => {
   const ipc = toIPC([["x", [1]]], { x: f.int32() });
-  expect(() => q.table({ x: q.js("date") }).parseIPC(ipc)).toThrow();
+  expect(() => q.table({ x: q.like("date") }).parseIPC(ipc)).toThrow();
 });
 
 // =============================================================================
-// 7. either — accept any of these
+// 7. oneOf — accept any of these
 // =============================================================================
 
-test("either([int32(), float64()]) accepts int32 column", () => {
+test("oneOf([int32(), float64()]) accepts int32 column", () => {
   const ipc = toIPC([["x", [1]]], { x: f.int32() });
   expect(
-    q.table({ x: q.either([q.int32(), q.float64()]) }).parseIPC(ipc).numRows,
+    q.table({ x: q.oneOf([q.int32(), q.float64()]) }).parseIPC(ipc).numRows,
   ).toBe(1);
 });
 
-test("either([int32(), float64()]) accepts float64 column", () => {
+test("oneOf([int32(), float64()]) accepts float64 column", () => {
   const ipc = toIPC([["x", [1.0]]], { x: f.float64() });
   expect(
-    q.table({ x: q.either([q.int32(), q.float64()]) }).parseIPC(ipc).numRows,
+    q.table({ x: q.oneOf([q.int32(), q.float64()]) }).parseIPC(ipc).numRows,
   ).toBe(1);
 });
 
-test("either([int32(), float64()]) rejects utf8 column", () => {
+test("oneOf([int32(), float64()]) rejects utf8 column", () => {
   const ipc = toIPC([["x", ["hi"]]], { x: f.utf8() });
-  expect(() => q.table({ x: q.either([q.int32(), q.float64()]) }).parseIPC(ipc))
+  expect(() => q.table({ x: q.oneOf([q.int32(), q.float64()]) }).parseIPC(ipc))
     .toThrow();
 });
 
@@ -565,23 +565,23 @@ test("parseIPC throws when list vs struct", () => {
     .toThrow();
 });
 
-test("either([int(), string()]) with broad types accepts int8", () => {
+test("oneOf([int(), string()]) with broad types accepts int8", () => {
   const ipc = toIPC([["x", [1]]], { x: f.int8() });
   expect(
-    q.table({ x: q.either([q.int(), q.string()]) }).parseIPC(ipc).numRows,
+    q.table({ x: q.oneOf([q.int(), q.string()]) }).parseIPC(ipc).numRows,
   ).toBe(1);
 });
 
-test("either([int(), string()]) with broad types accepts largeUtf8", () => {
+test("oneOf([int(), string()]) with broad types accepts largeUtf8", () => {
   const ipc = toIPC([["x", ["hi"]]], { x: f.largeUtf8() });
   expect(
-    q.table({ x: q.either([q.int(), q.string()]) }).parseIPC(ipc).numRows,
+    q.table({ x: q.oneOf([q.int(), q.string()]) }).parseIPC(ipc).numRows,
   ).toBe(1);
 });
 
-test("either([int(), string()]) rejects float64", () => {
+test("oneOf([int(), string()]) rejects float64", () => {
   const ipc = toIPC([["x", [1.0]]], { x: f.float64() });
-  expect(() => q.table({ x: q.either([q.int(), q.string()]) }).parseIPC(ipc))
+  expect(() => q.table({ x: q.oneOf([q.int(), q.string()]) }).parseIPC(ipc))
     .toThrow();
 });
 

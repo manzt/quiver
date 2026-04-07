@@ -1,23 +1,26 @@
 /**
  * Quiver entry point for apache-arrow.
  *
- * Provides the same DSL builders as the flechette entry point, but instead of
- * wrapping `tableFromIPC` (which has extraction options in flechette), this
- * module exports `schema()` to define typed schemas and `parse()` to validate
- * and narrow an already-parsed apache-arrow Table.
+ * Re-exports all shared builders and types from the base module, plus
+ * `table()` which returns a schema with both `parse` (validate an existing
+ * table) and `parseIPC` (deserialize + validate).
  *
  * @example
  * ```ts
  * import { tableFromIPC } from "apache-arrow";
  * import * as q from "@manzt/quiver/apache-arrow";
  *
- * const s = q.schema({ name: q.utf8(), age: q.int32() });
- * const table = q.parse(s, tableFromIPC(buffer));
- * //    ^? Table<{ name: Utf8, age: Int32 }>
+ * const schema = q.table({ name: q.utf8(), age: q.int32() });
+ *
+ * // Validate an existing table
+ * const typed = schema.parse(existingTable);
+ *
+ * // Or deserialize + validate in one step
+ * const table = schema.parseIPC(buffer);
  * ```
  */
 
-import type * as arrow from "apache-arrow";
+import * as arrow from "apache-arrow";
 import { Type } from "apache-arrow";
 import type * as d from "../data-types.ts";
 import { assertSchema } from "../assert.ts";
@@ -42,7 +45,6 @@ export {
   decimal64,
   dictionary,
   duration,
-  either,
   fixedSizeBinary,
   fixedSizeList,
   float,
@@ -58,16 +60,18 @@ export {
   int8,
   interval,
   // JS-type builders
-  js,
   largeBinary,
   // largeList,
   // largeListView,
   largeUtf8,
+  like,
   // Nested builders
   list,
   // listView,
   map,
   nullType,
+  // utf8View,
+  oneOf,
   // Error types
   QuiverError,
   runEndEncoded,
@@ -84,7 +88,6 @@ export {
   uint64,
   uint8,
   utf8,
-  // utf8View,
 } from "../mod.ts";
 export type { QuiverIssue, QuiverIssueCode } from "../mod.ts";
 
@@ -94,22 +97,8 @@ export type { QuiverIssue, QuiverIssueCode } from "../mod.ts";
 
 import type { SchemaEntry } from "../mod.ts";
 
-// =============================================================================
-// Schema descriptor
-// =============================================================================
-
-export interface Schema<
-  Entries extends Record<string, SchemaEntry> = Record<string, SchemaEntry>,
-> {
-  readonly entries: Entries;
-}
-
-/** Define a typed schema for validating apache-arrow tables. */
-export function schema<const Entries extends Record<string, SchemaEntry>>(
-  entries: Entries,
-): Schema<Entries> {
-  return { entries };
-}
+// Re-export everything from the base module
+export * from "../mod.ts";
 
 // =============================================================================
 // Normalize apache-arrow types to IPC-level representation
@@ -325,26 +314,58 @@ type ParsedTypeMap<E extends Record<string, SchemaEntry>> = Prettify<
 >;
 
 // =============================================================================
-// parse() — validate + narrow
+// table() — define a schema, validate with parse() or parseIPC()
 // =============================================================================
 
-/**
- * Validate an apache-arrow `Table` against a quiver schema descriptor.
- * Throws `QuiverError` on mismatch. Returns the same table with a
- * narrowed TypeScript type.
- */
-export function parse<const Entries extends Record<string, SchemaEntry>>(
-  s: Schema<Entries>,
-  table: arrow.Table,
-): arrow.Table<ParsedTypeMap<Entries>> {
-  const normalized = normalizeSchema(table.schema);
-  assertSchema(s.entries, normalized, false);
-  return table as arrow.Table<ParsedTypeMap<Entries>>;
+export function table<const Entries extends Record<string, SchemaEntry>>(
+  entries: Entries,
+): {
+  /** Validate an existing apache-arrow Table. Returns the same table with narrowed types. */
+  parse(table: arrow.Table): arrow.Table<ParsedTypeMap<Entries>>;
+  /** Deserialize Arrow IPC bytes and validate against the schema. */
+  parseIPC(
+    ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>,
+  ): arrow.Table<ParsedTypeMap<Entries>>;
+} {
+  return {
+    parse(table: arrow.Table): arrow.Table<ParsedTypeMap<Entries>> {
+      const normalized = normalizeSchema(table.schema);
+      assertSchema(entries, normalized, false);
+      return table as arrow.Table<ParsedTypeMap<Entries>>;
+    },
+    parseIPC(
+      ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>,
+    ): arrow.Table<ParsedTypeMap<Entries>> {
+      const buf = ipc instanceof ArrayBuffer
+        ? new Uint8Array(ipc)
+        : Array.isArray(ipc)
+        ? new Uint8Array(
+          (function () {
+            let len = 0;
+            for (const b of ipc) len += b.byteLength;
+            const out = new Uint8Array(len);
+            let off = 0;
+            for (const b of ipc) {
+              out.set(b, off);
+              off += b.byteLength;
+            }
+            return out.buffer;
+          })(),
+        )
+        : ipc;
+      const table = arrow.tableFromIPC(buf);
+      const normalized = normalizeSchema(table.schema);
+      assertSchema(entries, normalized, false);
+      return table as arrow.Table<ParsedTypeMap<Entries>>;
+    },
+  };
 }
 
 // =============================================================================
 // infer utility type
 // =============================================================================
 
-export type infer<T> = T extends Schema<infer E> ? arrow.Table<ParsedTypeMap<E>>
+export type infer<T> = T extends {
+  parse(table: arrow.Table): infer U;
+} ? U
   : never;

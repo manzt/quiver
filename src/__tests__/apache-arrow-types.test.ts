@@ -19,13 +19,6 @@ import { expectType } from "tintype";
 import * as f from "@uwdata/flechette";
 import * as arrow from "apache-arrow";
 import * as q from "../apache-arrow/mod.ts";
-import {
-  binaryView,
-  largeList,
-  largeListView,
-  listView,
-  utf8View,
-} from "../mod.ts";
 
 /** Build IPC via flechette, parse with apache-arrow. */
 function makeTable(
@@ -43,8 +36,7 @@ function makeTable(
 // =============================================================================
 
 test("int8", () => {
-  const t = q.parse(
-    q.schema({ a: q.int8() }),
+  const t = q.table({ a: q.int8() }).parse(
     makeTable([["a", [1]]], { a: f.int8() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int8; }>`);
@@ -59,8 +51,7 @@ test("int8", () => {
 });
 
 test("int16", () => {
-  const t = q.parse(
-    q.schema({ a: q.int16() }),
+  const t = q.table({ a: q.int16() }).parse(
     makeTable([["a", [1]]], { a: f.int16() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int16; }>`);
@@ -75,8 +66,7 @@ test("int16", () => {
 });
 
 test("int32", () => {
-  const t = q.parse(
-    q.schema({ a: q.int32() }),
+  const t = q.table({ a: q.int32() }).parse(
     makeTable([["a", [1]]], { a: f.int32() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int32; }>`);
@@ -91,8 +81,7 @@ test("int32", () => {
 });
 
 test("int64", () => {
-  const t = q.parse(
-    q.schema({ a: q.int64() }),
+  const t = q.table({ a: q.int64() }).parse(
     makeTable([["a", [1n]]], { a: f.int64() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int64; }>`);
@@ -111,8 +100,7 @@ test("int64", () => {
 // =============================================================================
 
 test("uint8", () => {
-  const t = q.parse(
-    q.schema({ a: q.uint8() }),
+  const t = q.table({ a: q.uint8() }).parse(
     makeTable([["a", [1]]], { a: f.uint8() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint8; }>`);
@@ -127,8 +115,7 @@ test("uint8", () => {
 });
 
 test("uint16", () => {
-  const t = q.parse(
-    q.schema({ a: q.uint16() }),
+  const t = q.table({ a: q.uint16() }).parse(
     makeTable([["a", [1]]], { a: f.uint16() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint16; }>`);
@@ -143,8 +130,7 @@ test("uint16", () => {
 });
 
 test("uint32", () => {
-  const t = q.parse(
-    q.schema({ a: q.uint32() }),
+  const t = q.table({ a: q.uint32() }).parse(
     makeTable([["a", [1]]], { a: f.uint32() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint32; }>`);
@@ -159,8 +145,7 @@ test("uint32", () => {
 });
 
 test("uint64", () => {
-  const t = q.parse(
-    q.schema({ a: q.uint64() }),
+  const t = q.table({ a: q.uint64() }).parse(
     makeTable([["a", [1n]]], { a: f.uint64() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint64; }>`);
@@ -179,8 +164,7 @@ test("uint64", () => {
 // =============================================================================
 
 test("float16", () => {
-  const t = q.parse(
-    q.schema({ a: q.float16() }),
+  const t = q.table({ a: q.float16() }).parse(
     makeTable([["a", [1.5]]], { a: f.float16() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Float16; }>`);
@@ -195,8 +179,7 @@ test("float16", () => {
 });
 
 test("float32", () => {
-  const t = q.parse(
-    q.schema({ a: q.float32() }),
+  const t = q.table({ a: q.float32() }).parse(
     makeTable([["a", [1.5]]], { a: f.float32() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Float32; }>`);
@@ -211,8 +194,7 @@ test("float32", () => {
 });
 
 test("float64", () => {
-  const t = q.parse(
-    q.schema({ a: q.float64() }),
+  const t = q.table({ a: q.float64() }).parse(
     makeTable([["a", [1.5]]], { a: f.float64() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Float64; }>`);
@@ -231,8 +213,7 @@ test("float64", () => {
 // =============================================================================
 
 test("utf8", () => {
-  const t = q.parse(
-    q.schema({ a: q.utf8() }),
+  const t = q.table({ a: q.utf8() }).parse(
     makeTable([["a", ["hi"]]], { a: f.utf8() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Utf8; }>`);
@@ -244,8 +225,7 @@ test("utf8", () => {
 });
 
 test("largeUtf8", () => {
-  const t = q.parse(
-    q.schema({ a: q.largeUtf8() }),
+  const t = q.table({ a: q.largeUtf8() }).parse(
     makeTable([["a", ["hi"]]], { a: f.largeUtf8() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.LargeUtf8; }>`);
@@ -261,8 +241,7 @@ test("largeUtf8", () => {
 // =============================================================================
 
 test("bool", () => {
-  const t = q.parse(
-    q.schema({ a: q.bool() }),
+  const t = q.table({ a: q.bool() }).parse(
     makeTable([["a", [true]]], { a: f.bool() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Bool; }>`);
@@ -278,8 +257,7 @@ test("bool", () => {
 // =============================================================================
 
 test("binary", () => {
-  const t = q.parse(
-    q.schema({ a: q.binary() }),
+  const t = q.table({ a: q.binary() }).parse(
     makeTable([["a", [new Uint8Array([1, 2])]]], { a: f.binary() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Binary; }>`);
@@ -291,8 +269,7 @@ test("binary", () => {
 });
 
 test("fixedSizeBinary", () => {
-  const t = q.parse(
-    q.schema({ a: q.fixedSizeBinary(4) }),
+  const t = q.table({ a: q.fixedSizeBinary(4) }).parse(
     makeTable([["a", [new Uint8Array([1, 2, 3, 4])]]], {
       a: f.fixedSizeBinary(4),
     }),
@@ -312,8 +289,7 @@ test("fixedSizeBinary", () => {
 // =============================================================================
 
 test("dateDay", () => {
-  const t = q.parse(
-    q.schema({ a: q.dateDay() }),
+  const t = q.table({ a: q.dateDay() }).parse(
     makeTable([["a", [new Date("2024-01-01")]]], { a: f.dateDay() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.DateDay; }>`);
@@ -325,8 +301,7 @@ test("dateDay", () => {
 });
 
 test("dateMillisecond", () => {
-  const t = q.parse(
-    q.schema({ a: q.dateMillisecond() }),
+  const t = q.table({ a: q.dateMillisecond() }).parse(
     makeTable([["a", [new Date("2024-01-01")]]], { a: f.dateMillisecond() }),
   );
   expectType(t).toMatchInlineSnapshot(
@@ -344,8 +319,7 @@ test("dateMillisecond", () => {
 // =============================================================================
 
 test("timeSecond", () => {
-  const t = q.parse(
-    q.schema({ a: q.timeSecond() }),
+  const t = q.table({ a: q.timeSecond() }).parse(
     makeTable([["a", [3600]]], { a: f.timeSecond() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Time<Times>; }>`);
@@ -357,8 +331,7 @@ test("timeSecond", () => {
 });
 
 test("timeMicrosecond", () => {
-  const t = q.parse(
-    q.schema({ a: q.timeMicrosecond() }),
+  const t = q.table({ a: q.timeMicrosecond() }).parse(
     makeTable([["a", [3600000000n]]], { a: f.timeMicrosecond() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Time<Times>; }>`);
@@ -374,8 +347,7 @@ test("timeMicrosecond", () => {
 // =============================================================================
 
 test("timestamp", () => {
-  const t = q.parse(
-    q.schema({ a: q.timestamp() }),
+  const t = q.table({ a: q.timestamp() }).parse(
     makeTable([["a", [1000000]]], { a: f.timestamp() }),
   );
   expectType(t).toMatchInlineSnapshot(
@@ -395,8 +367,7 @@ test("timestamp", () => {
 // =============================================================================
 
 test("duration", () => {
-  const t = q.parse(
-    q.schema({ a: q.duration() }),
+  const t = q.table({ a: q.duration() }).parse(
     makeTable([["a", [1000n]]], { a: f.duration() }),
   );
   expectType(t).toMatchInlineSnapshot(
@@ -416,8 +387,7 @@ test("duration", () => {
 // =============================================================================
 
 test("decimal128", () => {
-  const t = q.parse(
-    q.schema({ a: q.decimal128(10, 2) }),
+  const t = q.table({ a: q.decimal128(10, 2) }).parse(
     makeTable([["a", [1.5]]], { a: f.decimal(10, 2, 128) }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Decimal; }>`);
@@ -433,8 +403,7 @@ test("decimal128", () => {
 // =============================================================================
 
 test("dictionary(utf8)", () => {
-  const t = q.parse(
-    q.schema({ a: q.dictionary(q.utf8()) }),
+  const t = q.table({ a: q.dictionary(q.utf8()) }).parse(
     makeTable([["a", ["a", "b", "a"]]], { a: f.dictionary(f.utf8()) }),
   );
   expectType(t).toMatchInlineSnapshot(
@@ -454,8 +423,7 @@ test("dictionary(utf8)", () => {
 // =============================================================================
 
 test("list(int32)", () => {
-  const t = q.parse(
-    q.schema({ a: q.list(q.int32()) }),
+  const t = q.table({ a: q.list(q.int32()) }).parse(
     makeTable([["a", [[1, 2]]]], { a: f.list(f.int32()) }),
   );
   expectType(t).toMatchInlineSnapshot(
@@ -471,8 +439,7 @@ test("list(int32)", () => {
 });
 
 test("list(utf8)", () => {
-  const t = q.parse(
-    q.schema({ a: q.list(q.utf8()) }),
+  const t = q.table({ a: q.list(q.utf8()) }).parse(
     makeTable([["a", [["a", "b"]]]], { a: f.list(f.utf8()) }),
   );
   expectType(t).toMatchInlineSnapshot(
@@ -490,23 +457,22 @@ test("list(utf8)", () => {
 // =============================================================================
 
 test("struct", () => {
-  const t = q.parse(
-    q.schema({ a: q.struct({ x: q.int32(), y: q.utf8() }) }),
+  const t = q.table({ a: q.struct({ x: q.int32(), y: q.utf8() }) }).parse(
     makeTable(
       [["a", [{ x: 1, y: "hi" }]]],
       { a: f.struct({ x: f.int32(), y: f.utf8() }) },
     ),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Struct<StructTypeMap<(Field<"x", IntType<32, true>> | Field<"y", f.Utf8Type>)[]>>; }>`,
+    `arrow.Table<{ a: arrow.Struct<StructTypeMap<(q.Field<"x", IntType<32, true>> | q.Field<"y", f.Utf8Type>)[]>>; }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
-    `arrow.Vector<arrow.Struct<StructTypeMap<(Field<"x", IntType<32, true>> | Field<"y", f.Utf8Type>)[]>>>`,
+    `arrow.Vector<arrow.Struct<StructTypeMap<(q.Field<"x", IntType<32, true>> | q.Field<"y", f.Utf8Type>)[]>>>`,
   );
   const val = vec.get(0);
   expectType(val).toMatchInlineSnapshot(
-    `arrow.StructRowProxy<StructTypeMap<(Field<"x", IntType<32, true>> | Field<"y", f.Utf8Type>)[]>> | null`,
+    `arrow.StructRowProxy<StructTypeMap<(q.Field<"x", IntType<32, true>> | q.Field<"y", f.Utf8Type>)[]>> | null`,
   );
   expect(val?.x).toBe(1);
   expect(val?.y).toBe("hi");
@@ -517,8 +483,7 @@ test("struct", () => {
 // =============================================================================
 
 test("map(utf8, int32)", () => {
-  const t = q.parse(
-    q.schema({ a: q.map(q.utf8(), q.int32()) }),
+  const t = q.table({ a: q.map(q.utf8(), q.int32()) }).parse(
     makeTable(
       [["a", [new Map([["k", 1]])]]],
       { a: f.map(f.utf8(), f.int32()) },
@@ -543,8 +508,9 @@ test("map(utf8, int32)", () => {
 // =============================================================================
 
 test("either([int32, float64])", () => {
-  const s = q.schema({ a: q.either([q.int32(), q.float64()]) });
-  const t = q.parse(s, makeTable([["a", [1]]], { a: f.int32() }));
+  const t = q.table({ a: q.oneOf([q.int32(), q.float64()]) }).parse(
+    makeTable([["a", [1]]], { a: f.int32() }),
+  );
   expectType(t).toMatchInlineSnapshot(
     `arrow.Table<{ a: arrow.Int32 | arrow.Float64; }>`,
   );
@@ -562,8 +528,9 @@ test("either([int32, float64])", () => {
 // =============================================================================
 
 test("broad int()", () => {
-  const s = q.schema({ a: q.int() });
-  const t = q.parse(s, makeTable([["a", [1]]], { a: f.int32() }));
+  const t = q.table({ a: q.int() }).parse(
+    makeTable([["a", [1]]], { a: f.int32() }),
+  );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int<Ints>; }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Int<Ints>>`);
@@ -573,8 +540,9 @@ test("broad int()", () => {
 });
 
 test("broad float()", () => {
-  const s = q.schema({ a: q.float() });
-  const t = q.parse(s, makeTable([["a", [1.5]]], { a: f.float64() }));
+  const t = q.table({ a: q.float() }).parse(
+    makeTable([["a", [1.5]]], { a: f.float64() }),
+  );
   expectType(t).toMatchInlineSnapshot(
     `arrow.Table<{ a: arrow.Float<Floats>; }>`,
   );
@@ -586,8 +554,9 @@ test("broad float()", () => {
 });
 
 test("broad string()", () => {
-  const s = q.schema({ a: q.string() });
-  const t = q.parse(s, makeTable([["a", ["hi"]]], { a: f.utf8() }));
+  const t = q.table({ a: q.string() }).parse(
+    makeTable([["a", ["hi"]]], { a: f.utf8() }),
+  );
   expectType(t).toMatchInlineSnapshot(
     `arrow.Table<{ a: arrow.Utf8 | arrow.LargeUtf8; }>`,
   );
@@ -601,8 +570,9 @@ test("broad string()", () => {
 });
 
 test("broad date()", () => {
-  const s = q.schema({ a: q.date() });
-  const t = q.parse(s, makeTable([["a", [new Date()]]], { a: f.dateDay() }));
+  const t = q.table({ a: q.date() }).parse(
+    makeTable([["a", [new Date()]]], { a: f.dateDay() }),
+  );
   expectType(t).toMatchInlineSnapshot(
     `arrow.Table<{ a: arrow.Date_<Dates>; }>`,
   );
@@ -614,8 +584,9 @@ test("broad date()", () => {
 });
 
 test("broad time()", () => {
-  const s = q.schema({ a: q.time() });
-  const t = q.parse(s, makeTable([["a", [3600]]], { a: f.timeSecond() }));
+  const t = q.table({ a: q.time() }).parse(
+    makeTable([["a", [3600]]], { a: f.timeSecond() }),
+  );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Time<Times>; }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Time<Times>>`);
@@ -625,51 +596,11 @@ test("broad time()", () => {
 });
 
 // =============================================================================
-// Types unsupported by apache-arrow JS map to never
-// =============================================================================
-
-test("largeList maps to never", () => {
-  const s = q.schema({ a: largeList(q.int32()) });
-  type Col = q.infer<typeof s> extends arrow.Table<infer T> ? T["a"] : never;
-  const _check: never = null as unknown as Col;
-  expect(true).toBe(true);
-});
-
-test("listView maps to never", () => {
-  const s = q.schema({ a: listView(q.int32()) });
-  type Col = q.infer<typeof s> extends arrow.Table<infer T> ? T["a"] : never;
-  const _check: never = null as unknown as Col;
-  expect(true).toBe(true);
-});
-
-test("largeListView maps to never", () => {
-  const s = q.schema({ a: largeListView(q.int32()) });
-  type Col = q.infer<typeof s> extends arrow.Table<infer T> ? T["a"] : never;
-  const _check: never = null as unknown as Col;
-  expect(true).toBe(true);
-});
-
-test("binaryView maps to never", () => {
-  const s = q.schema({ a: binaryView() });
-  type Col = q.infer<typeof s> extends arrow.Table<infer T> ? T["a"] : never;
-  const _check: never = null as unknown as Col;
-  expect(true).toBe(true);
-});
-
-test("utf8View maps to never", () => {
-  const s = q.schema({ a: utf8View() });
-  type Col = q.infer<typeof s> extends arrow.Table<infer T> ? T["a"] : never;
-  const _check: never = null as unknown as Col;
-  expect(true).toBe(true);
-});
-
-// =============================================================================
-// JS-type builders — q.js("type")
+// JS-type builders — q.like("type")
 // =============================================================================
 
 test('js("number")', () => {
-  const t = q.parse(
-    q.schema({ a: q.js("number") }),
+  const t = q.table({ a: q.like("number") }).parse(
     makeTable([["a", [1]]], { a: f.int32() }),
   );
   expectType(t).toMatchInlineSnapshot(
@@ -685,8 +616,7 @@ test('js("number")', () => {
 });
 
 test('js("bigint")', () => {
-  const t = q.parse(
-    q.schema({ a: q.js("bigint") }),
+  const t = q.table({ a: q.like("bigint") }).parse(
     makeTable([["a", [1n]]], { a: f.int64() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int<Ints>; }>`);
@@ -698,8 +628,7 @@ test('js("bigint")', () => {
 });
 
 test('js("string")', () => {
-  const t = q.parse(
-    q.schema({ a: q.js("string") }),
+  const t = q.table({ a: q.like("string") }).parse(
     makeTable([["a", ["hi"]]], { a: f.utf8() }),
   );
   expectType(t).toMatchInlineSnapshot(
@@ -715,8 +644,7 @@ test('js("string")', () => {
 });
 
 test('js("boolean")', () => {
-  const t = q.parse(
-    q.schema({ a: q.js("boolean") }),
+  const t = q.table({ a: q.like("boolean") }).parse(
     makeTable([["a", [true]]], { a: f.bool() }),
   );
   expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Bool; }>`);
@@ -728,8 +656,7 @@ test('js("boolean")', () => {
 });
 
 test('js("bytes")', () => {
-  const t = q.parse(
-    q.schema({ a: q.js("bytes") }),
+  const t = q.table({ a: q.like("bytes") }).parse(
     makeTable([["a", [new Uint8Array([1, 2])]]], { a: f.binary() }),
   );
   expectType(t).toMatchInlineSnapshot(
@@ -745,8 +672,7 @@ test('js("bytes")', () => {
 });
 
 test('js("date")', () => {
-  const t = q.parse(
-    q.schema({ a: q.js("date") }),
+  const t = q.table({ a: q.like("date") }).parse(
     makeTable([["a", [new Date("2024-01-01")]]], { a: f.dateDay() }),
   );
   expectType(t).toMatchInlineSnapshot(
