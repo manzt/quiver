@@ -1,7 +1,10 @@
 {
   "name": "@manzt/quiver",
   "version": "2.3.0",
-  "exports": "./src/mod.ts",
+  "exports": {
+    ".": "./src/mod.ts",
+    "./apache-arrow": "./src/apache-arrow/mod.ts"
+  },
   "license": "MIT",
   "nodeModulesDir": "auto",
   "test": {
@@ -20,6 +23,7 @@
     "@std/assert": "jsr:@std/assert@^1.0.19",
     "@std/path": "jsr:@std/path@^1.1.4",
     "@uwdata/flechette": "npm:@uwdata/flechette@^2.3.0",
+    "apache-arrow": "npm:apache-arrow@^21.1.0",
     "magic-string": "npm:magic-string@^0.30.21",
     "tintype": "npm:tintype@^0.0.1",
     "typescript": "npm:typescript@^6.0.2",
