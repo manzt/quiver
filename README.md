@@ -1,6 +1,6 @@
 <h1>
 <p align="center">
-  🏹 quiver
+  quiver
 </h1>
 <p align="center">
   a (type-safe) place for your arrows
@@ -9,89 +9,93 @@
 
 **quiver** lets you define [Apache Arrow](https://arrow.apache.org) table
 schemas in TypeScript, validate Arrow IPC data against them at parse time, and
-get back fully typed tables. Think [zod](https://zod.dev) or
-[valibot](https://valibot.dev), but for Arrow.
-
-Built on [`@uwdata/flechette`](https://github.com/uwdata/flechette).
+get back fully typed tables. Think [zod](https://zod.dev) for Arrow.
 
 ```
 npx jsr add @manzt/quiver
 ```
 
-```ts
-import * as q from "@manzt/quiver";
+Quiver has two entry points, one for each major Arrow JS implementation:
 
-let schema = q.table({
-  id: q.int32(),
-  name: q.utf8().nullable(),
-  score: q.float64(),
-}, { useDate: true });
+| Entry point                  | Backing library                                            | `table()` returns     |
+| ---------------------------- | ---------------------------------------------------------- | --------------------- |
+| `@manzt/quiver/flechette`    | [`@uwdata/flechette`](https://github.com/uwdata/flechette) | `{ parseIPC }`        |
+| `@manzt/quiver/apache-arrow` | [`apache-arrow`](https://github.com/apache/arrow-js)       | `{ parse, parseIPC }` |
 
-let table = schema.parseIPC(bytes); // throws if schema doesn't match
-table.at(0).name; // string | null
-table.at(0).score; // number
-```
+Both share the same type builders (`q.int32()`, `q.utf8()`, etc.). The
+difference is `table()` itself: flechette's accepts extraction options as a
+second argument and only exposes `parseIPC`, while apache-arrow's has no options
+and exposes both `parse` and `parseIPC`.
 
-## usage
+## flechette
 
-Use `q.infer` to extract the table type from a schema and pass it around your
-code. Types flow through every operation — `getChild`, `select`, `toArray`,
-iteration. Change `useBigInt` or `useDate` and the types update.
+Flechette's type mapping depends on extraction options (`useBigInt`, `useDate`,
+etc.) that are baked in at parse time. Because of this, the flechette entry
+point only exposes `parseIPC` — options and validation happen together:
 
 ```ts
+import * as q from "@manzt/quiver/flechette";
+
 let schema = q.table({
-  id: q.int32(),
   name: q.utf8().nullable(),
   score: q.float64(),
   created: q.dateDay(),
 }, { useDate: true });
 
-type MyTable = q.infer<typeof schema>;
+let table = schema.parseIPC(bytes);
+table.at(0).name; // string | null
+table.at(0).score; // number
+table.at(0).created; // Date (because useDate: true)
+```
 
-function processTable(table: MyTable) {
-  for (let row of table) {
-    row.id; // number
-    row.name; // string | null
-    row.created; // Date (because useDate: true)
-  }
-}
+Change `useDate` to `false` and the type of `created` becomes `number`. Types
+flow through `getChild`, `toArray`, iteration — everything stays in sync.
 
-let response = await fetch("https://example.com/data.arrow");
-let bytes = new Uint8Array(await response.arrayBuffer());
+## apache-arrow
 
-processTable(schema.parseIPC(bytes));
+Apache Arrow JS has no extraction options — scalar types are fixed by the
+`DataType` alone. So the entry point exposes both `parse` (validate an existing
+table) and `parseIPC` (deserialize + validate):
+
+```ts
+import { tableFromIPC } from "apache-arrow";
+import * as q from "@manzt/quiver/apache-arrow";
+
+let schema = q.table({ name: q.utf8(), age: q.int32() });
+
+// validate an already-parsed table
+let typed = schema.parse(tableFromIPC(buffer));
+
+// or deserialize + validate in one step
+let table = schema.parseIPC(buffer);
 ```
 
 ## builders
 
-Quiver provides three tiers of schema builders. Choose the level of strictness
+Both entry points share the same type builders. Choose the level of strictness
 that matches your trust in the producer:
 
 ```ts
 // JS-level — "I care about the JS type I get back"
-q.js("number")   // → number
-q.js("bigint")   // → bigint  (requires useBigInt)
-q.js("string")   // → string
-q.js("boolean")  // → boolean
-q.js("bytes")    // → Uint8Array
-q.js("date")     // → Date    (requires useDate)
+q.like("number")   q.like("string")   q.like("bytes")
+q.like("bigint")   q.like("boolean")  q.like("date")
 
 // Arrow-level — "I care about the Arrow type family"
-q.int()          q.float()        q.date()
-q.time()         q.string()
+q.int()     q.float()    q.string()
+q.date()    q.time()
 
 // Arrow-specific — "I care about the exact wire type"
-q.int32()        q.float64()      q.utf8()
-q.dateDay()      q.timeSecond()   // ...
+q.int32()   q.float64()  q.utf8()
+q.dateDay() q.timeSecond()  // ...
 ```
 
 These compose with the rest of the API:
 
 ```ts
 // Accept alternatives
-q.table({ value: q.either([q.int32(), q.float64()]) });
+q.table({ value: q.oneOf([q.int32(), q.float64()]) });
 
-// Ordered columns (tuple form) — getChildAt knows exact types
+// Ordered columns (tuple form, flechette only)
 q.table([["id", q.int32()], ["name", q.utf8()]]);
 
 // Nested types
@@ -102,13 +106,28 @@ q.table({
 });
 ```
 
-## what gets narrowed
+## `q.infer`
 
-Builders narrow both the scalar type (`.at(i)`) and the array type
-(`.toArray()`). Stricter builders give tighter types:
+Use `q.infer` to extract the table type from a schema:
 
 ```ts
-let loose = q.table({ value: q.js("number") });
+let schema = q.table({ id: q.int32(), name: q.utf8() });
+type MyTable = q.infer<typeof schema>;
+
+function processTable(table: MyTable) {
+  for (let row of table) {
+    row.id; // number
+    row.name; // string
+  }
+}
+```
+
+## what gets narrowed
+
+Stricter builders give tighter types for both scalar access and array access:
+
+```ts
+let loose = q.table({ value: q.like("number") });
 let table = loose.parseIPC(bytes);
 let col = table.getChild("value");
 
@@ -125,29 +144,35 @@ col.toArray(); // Float64Array
 
 ## how it works
 
-Flechette parses Arrow IPC into JavaScript values, but the mapping from Arrow
-types to JS types depends on the data type, the extraction options, and whether
-nulls are present. Quiver captures all of this statically. See
-[flechette's type mapping table](https://idl.uw.edu/flechette/api/data-types)
-for the full Arrow → JS correspondence.
-
 Builders return phantom schema entries — no runtime data, just match criteria
-and a type-level generic. `parseIPC` calls flechette's `tableFromIPC`, validates
-the Arrow schema against your declared types, and returns the flechette table
-with quiver's generics overlaid.
+and a type-level generic. At parse time, the Arrow schema is validated against
+your declared types, and the table is returned with narrowed generics overlaid.
 
-Quiver tracks two type mappings from `DataType + ExtractionOptions`:
+Both libraries return a generic `Table`, but the generics differ. Quiver narrows
+each column down to two things:
 
 - `Scalar` — what `column.at(i)` returns (`number`, `bigint`, `Date`,
   `Int32Array` for list elements, `{ field: type }` for structs, etc.)
-- `ValueArray` — what `column.toArray()` returns. Non-nullable numeric columns
-  get zero-copy typed arrays (`Int32Array`, `Float64Array`). Nullable numeric
-  columns can be either typed arrays or `Array<number | null>` depending on
-  whether nulls are present in the data. Non-numeric columns always return
-  `Array`.
+- `ValueArray` — what `column.toArray()` returns (zero-copy typed arrays like
+  `Float64Array` for non-nullable numerics, `Array<T | null>` otherwise)
 
-Options propagate through nested types — a struct containing an `int64` field
-with `{ useBigInt: true }` correctly resolves to `{ x: bigint }`.
+For **flechette**, both are computed from `DataType + ExtractionOptions`. A
+`dateDay` column returns `number` by default but `Date` with
+`{ useDate: true }`. Options propagate through nested types: a struct with an
+`int64` field and `{ useBigInt: true }` resolves to `{ x: bigint }`. See
+[flechette's type mapping table](https://idl.uw.edu/flechette/api/data-types)
+for the full correspondence.
+
+For **apache-arrow**, the table generic is parameterized by `arrow.DataType`
+alone — there are no extraction options. Quiver maps its builders to the
+corresponding type (e.g., `q.int32()` becomes `arrow.Int32`) and narrows the
+table directly.
+
+Both entry points share a backend-agnostic assertion module. The challenge is
+that `apache-arrow` uses negative `typeId` values for concrete subtypes
+(`Int32 = -4`, `Float64 = -12`) while `flechette` and the IPC spec use
+family-level values (`Int = 2`, `Float = 3`). A normalization layer bridges this
+so the shared validation logic works unchanged.
 
 ## versioning
 
