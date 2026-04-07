@@ -308,14 +308,6 @@ function collectTypeIssues(
       continue;
     }
 
-    // Map children — special structure { key, value }
-    if (
-      key === "children" && Array.isArray(expected) &&
-      expected.length === 1 && (expected[0] as Record<string, unknown>)?.key
-    ) {
-      continue; // map children handled by typeId match
-    }
-
     // Simple property comparison
     if ((actual as Record<string, unknown>)[key] !== expected) {
       issues.push({

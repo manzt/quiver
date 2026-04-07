@@ -690,3 +690,4 @@ test("tuple form: supports nullable", () => {
   const table = q.table([["x", q.int32().nullable()]]).parseIPC(ipc);
   expect(table.numRows).toBe(3);
 });
+

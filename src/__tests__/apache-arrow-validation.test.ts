@@ -453,3 +453,4 @@ test("parsed table .getChild() returns correct column", () => {
   expect(result.getChild("a")?.get(0)).toBe(10);
   expect(result.getChild("b")?.get(1)).toBe("world");
 });
+

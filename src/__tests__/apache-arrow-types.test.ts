@@ -19,6 +19,13 @@ import { expectType } from "tintype";
 import * as f from "@uwdata/flechette";
 import * as arrow from "apache-arrow";
 import * as q from "../apache-arrow/mod.ts";
+import {
+  binaryView,
+  largeList,
+  largeListView,
+  listView,
+  utf8View,
+} from "../mod.ts";
 
 /** Build IPC via flechette, parse with apache-arrow. */
 function makeTable(
@@ -615,4 +622,43 @@ test("broad time()", () => {
   const val = vec.get(0);
   expectType(val).toMatchInlineSnapshot(`number | bigint | null`);
   expect(typeof val).toBe("number");
+});
+
+// =============================================================================
+// Types unsupported by apache-arrow JS map to never
+// =============================================================================
+
+test("largeList maps to never", () => {
+  const s = q.schema({ a: largeList(q.int32()) });
+  type Col = q.infer<typeof s> extends arrow.Table<infer T> ? T["a"] : never;
+  const _check: never = null as unknown as Col;
+  expect(true).toBe(true);
+});
+
+test("listView maps to never", () => {
+  const s = q.schema({ a: listView(q.int32()) });
+  type Col = q.infer<typeof s> extends arrow.Table<infer T> ? T["a"] : never;
+  const _check: never = null as unknown as Col;
+  expect(true).toBe(true);
+});
+
+test("largeListView maps to never", () => {
+  const s = q.schema({ a: largeListView(q.int32()) });
+  type Col = q.infer<typeof s> extends arrow.Table<infer T> ? T["a"] : never;
+  const _check: never = null as unknown as Col;
+  expect(true).toBe(true);
+});
+
+test("binaryView maps to never", () => {
+  const s = q.schema({ a: binaryView() });
+  type Col = q.infer<typeof s> extends arrow.Table<infer T> ? T["a"] : never;
+  const _check: never = null as unknown as Col;
+  expect(true).toBe(true);
+});
+
+test("utf8View maps to never", () => {
+  const s = q.schema({ a: utf8View() });
+  type Col = q.infer<typeof s> extends arrow.Table<infer T> ? T["a"] : never;
+  const _check: never = null as unknown as Col;
+  expect(true).toBe(true);
 });
