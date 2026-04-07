@@ -662,3 +662,101 @@ test("utf8View maps to never", () => {
   const _check: never = null as unknown as Col;
   expect(true).toBe(true);
 });
+
+// =============================================================================
+// JS-type builders — q.js("type")
+// =============================================================================
+
+test('js("number")', () => {
+  const t = q.parse(
+    q.schema({ a: q.js("number") }),
+    makeTable([["a", [1]]], { a: f.int32() }),
+  );
+  expectType(t).toMatchInlineSnapshot(
+    `arrow.Table<{ a: arrow.Int<Ints> | arrow.Float<Floats>; }>`,
+  );
+  const vec = t.getChild("a")!;
+  expectType(vec).toMatchInlineSnapshot(
+    `arrow.Vector<arrow.Int<Ints> | arrow.Float<Floats>>`,
+  );
+  const val = vec.get(0);
+  expectType(val).toMatchInlineSnapshot(`number | bigint | null`);
+  expect(typeof val).toBe("number");
+});
+
+test('js("bigint")', () => {
+  const t = q.parse(
+    q.schema({ a: q.js("bigint") }),
+    makeTable([["a", [1n]]], { a: f.int64() }),
+  );
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int<Ints>; }>`);
+  const vec = t.getChild("a")!;
+  expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Int<Ints>>`);
+  const val = vec.get(0);
+  expectType(val).toMatchInlineSnapshot(`number | bigint | null`);
+  expect(typeof val).toBe("bigint");
+});
+
+test('js("string")', () => {
+  const t = q.parse(
+    q.schema({ a: q.js("string") }),
+    makeTable([["a", ["hi"]]], { a: f.utf8() }),
+  );
+  expectType(t).toMatchInlineSnapshot(
+    `arrow.Table<{ a: arrow.Utf8 | arrow.LargeUtf8; }>`,
+  );
+  const vec = t.getChild("a")!;
+  expectType(vec).toMatchInlineSnapshot(
+    `arrow.Vector<arrow.Utf8 | arrow.LargeUtf8>`,
+  );
+  const val = vec.get(0);
+  expectType(val).toMatchInlineSnapshot(`string | null`);
+  expect(typeof val).toBe("string");
+});
+
+test('js("boolean")', () => {
+  const t = q.parse(
+    q.schema({ a: q.js("boolean") }),
+    makeTable([["a", [true]]], { a: f.bool() }),
+  );
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Bool; }>`);
+  const vec = t.getChild("a")!;
+  expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Bool>`);
+  const val = vec.get(0);
+  expectType(val).toMatchInlineSnapshot(`boolean | null`);
+  expect(typeof val).toBe("boolean");
+});
+
+test('js("bytes")', () => {
+  const t = q.parse(
+    q.schema({ a: q.js("bytes") }),
+    makeTable([["a", [new Uint8Array([1, 2])]]], { a: f.binary() }),
+  );
+  expectType(t).toMatchInlineSnapshot(
+    `arrow.Table<{ a: arrow.Binary | arrow.FixedSizeBinary | arrow.LargeBinary; }>`,
+  );
+  const vec = t.getChild("a")!;
+  expectType(vec).toMatchInlineSnapshot(
+    `arrow.Vector<arrow.Binary | arrow.FixedSizeBinary | arrow.LargeBinary>`,
+  );
+  const val = vec.get(0);
+  expectType(val).toMatchInlineSnapshot(`Uint8Array<ArrayBufferLike> | null`);
+  expect(val).toBeInstanceOf(Uint8Array);
+});
+
+test('js("date")', () => {
+  const t = q.parse(
+    q.schema({ a: q.js("date") }),
+    makeTable([["a", [new Date("2024-01-01")]]], { a: f.dateDay() }),
+  );
+  expectType(t).toMatchInlineSnapshot(
+    `arrow.Table<{ a: arrow.Timestamp<Timestamps> | arrow.Date_<Dates>; }>`,
+  );
+  const vec = t.getChild("a")!;
+  expectType(vec).toMatchInlineSnapshot(
+    `arrow.Vector<arrow.Timestamp<Timestamps> | arrow.Date_<Dates>>`,
+  );
+  const val = vec.get(0);
+  expectType(val).toMatchInlineSnapshot(`number | null`);
+  expect(typeof val).toBe("number");
+});

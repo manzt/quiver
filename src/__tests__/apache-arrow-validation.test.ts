@@ -262,6 +262,99 @@ test("q.time() rejects int32 column", () => {
 });
 
 // =============================================================================
+// 5b. JS-type builders — q.js("type")
+// =============================================================================
+
+test('q.js("number") accepts int32 column', () => {
+  const table = makeTable([["x", [1]]], { x: f.int32() });
+  expect(q.parse(q.schema({ x: q.js("number") }), table).numRows).toBe(1);
+});
+
+test('q.js("number") accepts float64 column', () => {
+  const table = makeTable([["x", [1.0]]], { x: f.float64() });
+  expect(q.parse(q.schema({ x: q.js("number") }), table).numRows).toBe(1);
+});
+
+test('q.js("number") rejects utf8 column', () => {
+  const table = makeTable([["x", ["hi"]]], { x: f.utf8() });
+  expect(() => q.parse(q.schema({ x: q.js("number") }), table)).toThrow();
+});
+
+test('q.js("bigint") accepts int64 column', () => {
+  const table = makeTable([["x", [1n]]], { x: f.int64() });
+  expect(q.parse(q.schema({ x: q.js("bigint") }), table).numRows).toBe(1);
+});
+
+test('q.js("bigint") accepts uint64 column', () => {
+  const table = makeTable([["x", [1n]]], { x: f.uint64() });
+  expect(q.parse(q.schema({ x: q.js("bigint") }), table).numRows).toBe(1);
+});
+
+test('q.js("bigint") rejects int32 column', () => {
+  const table = makeTable([["x", [1]]], { x: f.int32() });
+  expect(() => q.parse(q.schema({ x: q.js("bigint") }), table)).toThrow();
+});
+
+test('q.js("string") accepts utf8 column', () => {
+  const table = makeTable([["x", ["hi"]]], { x: f.utf8() });
+  expect(q.parse(q.schema({ x: q.js("string") }), table).numRows).toBe(1);
+});
+
+test('q.js("string") accepts largeUtf8 column', () => {
+  const table = makeTable([["x", ["hi"]]], { x: f.largeUtf8() });
+  expect(q.parse(q.schema({ x: q.js("string") }), table).numRows).toBe(1);
+});
+
+test('q.js("string") rejects int32 column', () => {
+  const table = makeTable([["x", [1]]], { x: f.int32() });
+  expect(() => q.parse(q.schema({ x: q.js("string") }), table)).toThrow();
+});
+
+test('q.js("boolean") accepts bool column', () => {
+  const table = makeTable([["x", [true]]], { x: f.bool() });
+  expect(q.parse(q.schema({ x: q.js("boolean") }), table).numRows).toBe(1);
+});
+
+test('q.js("boolean") rejects int32 column', () => {
+  const table = makeTable([["x", [1]]], { x: f.int32() });
+  expect(() => q.parse(q.schema({ x: q.js("boolean") }), table)).toThrow();
+});
+
+test('q.js("bytes") accepts binary column', () => {
+  const table = makeTable([["x", [new Uint8Array([1])]]], { x: f.binary() });
+  expect(q.parse(q.schema({ x: q.js("bytes") }), table).numRows).toBe(1);
+});
+
+test('q.js("bytes") accepts fixedSizeBinary column', () => {
+  const table = makeTable([["x", [new Uint8Array([1, 2])]]], {
+    x: f.fixedSizeBinary(2),
+  });
+  expect(q.parse(q.schema({ x: q.js("bytes") }), table).numRows).toBe(1);
+});
+
+test('q.js("bytes") rejects utf8 column', () => {
+  const table = makeTable([["x", ["hi"]]], { x: f.utf8() });
+  expect(() => q.parse(q.schema({ x: q.js("bytes") }), table)).toThrow();
+});
+
+test('q.js("date") accepts dateDay column', () => {
+  const table = makeTable([["x", [new Date("2024-01-01")]]], {
+    x: f.dateDay(),
+  });
+  expect(q.parse(q.schema({ x: q.js("date") }), table).numRows).toBe(1);
+});
+
+test('q.js("date") accepts timestamp column', () => {
+  const table = makeTable([["x", [1000000]]], { x: f.timestamp() });
+  expect(q.parse(q.schema({ x: q.js("date") }), table).numRows).toBe(1);
+});
+
+test('q.js("date") rejects int32 column', () => {
+  const table = makeTable([["x", [1]]], { x: f.int32() });
+  expect(() => q.parse(q.schema({ x: q.js("date") }), table)).toThrow();
+});
+
+// =============================================================================
 // 6. either — accept any of these
 // =============================================================================
 
@@ -453,4 +546,3 @@ test("parsed table .getChild() returns correct column", () => {
   expect(result.getChild("a")?.get(0)).toBe(10);
   expect(result.getChild("b")?.get(1)).toBe("world");
 });
-
