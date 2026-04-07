@@ -3,6 +3,7 @@
   "version": "2.3.0",
   "exports": {
     ".": "./src/mod.ts",
+    "./flechette": "./src/flechette/mod.ts",
     "./apache-arrow": "./src/apache-arrow/mod.ts"
   },
   "license": "MIT",

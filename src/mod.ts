@@ -1,7 +1,10 @@
-import * as f from "@uwdata/flechette";
 import type * as d from "./data-types.ts";
-import type { Table } from "./table.gen.ts";
-import { assertSchema, type TypeMatcher } from "./assert.ts";
+import type { TypeMatcher } from "./assert.ts";
+
+/** A valid time unit value (second=0, millisecond=1, microsecond=2, nanosecond=3). */
+export type TimeUnit = 0 | 1 | 2 | 3;
+/** A valid interval unit value (year_month=0, day_time=1, month_day_nano=2). */
+export type IntervalUnit = 0 | 1 | 2;
 
 export type { DataType, Field, Schema } from "./data-types.ts";
 export type { Scalar, ValueArray } from "./types.ts";
@@ -11,6 +14,7 @@ export {
   type QuiverIssue,
   type QuiverIssueCode,
 } from "./assert.ts";
+export { type TypeMatcher } from "./assert.ts";
 
 /**
  * A phantom schema descriptor for a column type. Carries no runtime data —
@@ -145,7 +149,7 @@ export function timeNanosecond(): SchemaEntry<d.TimeType<64>> {
 
 /** Timestamp. Scalar: `number` or `Date` with `useDate`. */
 export function timestamp(
-  unit?: f.TimeUnit_,
+  unit?: TimeUnit,
   timezone?: string | null,
 ): SchemaEntry<d.TimestampType> {
   const match: TypeMatcher = { typeId: 10 };
@@ -154,13 +158,13 @@ export function timestamp(
   return schema(match);
 }
 /** Date/time interval. */
-export function interval(unit?: f.IntervalUnit_): SchemaEntry<d.IntervalType> {
+export function interval(unit?: IntervalUnit): SchemaEntry<d.IntervalType> {
   const match: TypeMatcher = { typeId: 11 };
   if (unit !== undefined) match.unit = unit;
   return schema(match);
 }
 /** Duration. Scalar: `number` or `bigint` with `useBigInt`. */
-export function duration(unit?: f.TimeUnit_): SchemaEntry<d.DurationType> {
+export function duration(unit?: TimeUnit): SchemaEntry<d.DurationType> {
   const match: TypeMatcher = { typeId: 18 };
   if (unit !== undefined) match.unit = unit;
   return schema(match);
@@ -218,31 +222,31 @@ export function fixedSizeBinary(
 }
 
 // =============================================================================
-// JS-type builders — match by JS scalar type
+// Like builders — match by JS scalar type
 // =============================================================================
 
 /** Match columns by their JS scalar type. */
-export function js(
+export function like(
   type: "number",
 ): SchemaEntry<d.IntType | d.FloatType>;
-export function js(
+export function like(
   type: "bigint",
 ): SchemaEntry<d.IntType<64>>;
-export function js(
+export function like(
   type: "string",
 ): SchemaEntry<d.Utf8Type | d.LargeUtf8Type | d.Utf8ViewType>;
-export function js(
+export function like(
   type: "boolean",
 ): SchemaEntry<d.BoolType>;
-export function js(
+export function like(
   type: "bytes",
 ): SchemaEntry<
   d.BinaryType | d.LargeBinaryType | d.BinaryViewType | d.FixedSizeBinaryType
 >;
-export function js(
+export function like(
   type: "date",
 ): SchemaEntry<d.DateType | d.TimestampType>;
-export function js(
+export function like(
   type: "number" | "bigint" | "string" | "boolean" | "bytes" | "date",
 ): SchemaEntry {
   switch (type) {
@@ -371,7 +375,7 @@ export function runEndEncoded(
 }
 
 /** Accept any of the given types. Validation passes if the column matches at least one. */
-export function either<const E extends SchemaEntry[]>(
+export function oneOf<const E extends SchemaEntry[]>(
   entries: E,
 ): SchemaEntry<E[number] extends SchemaEntry<infer T> ? T : never> {
   return {
@@ -384,97 +388,3 @@ export function either<const E extends SchemaEntry[]>(
     },
   } as SchemaEntry<E[number] extends SchemaEntry<infer T> ? T : never>;
 }
-
-// =============================================================================
-// Type-level mapping: entries → Field array for Table generic
-// =============================================================================
-
-// Record form → unordered (Array of union)
-type RecordToFields<T extends Record<string, SchemaEntry>> = Array<
-  {
-    [K in keyof T & string]: {
-      name: K;
-      type: T[K] extends SchemaEntry<infer D, any> ? D : never;
-      nullable: T[K] extends SchemaEntry<any, infer N> ? N : false;
-    };
-  }[keyof T & string]
->;
-
-// Tuple form → ordered (mapped tuple)
-type TupleToFields<
-  T extends ReadonlyArray<readonly [string, SchemaEntry]>,
-> = {
-  [K in keyof T]: {
-    name: T[K] extends readonly [infer N, any] ? N : never;
-    type: T[K] extends readonly [any, SchemaEntry<infer D, any>] ? D
-      : never;
-    nullable: T[K] extends readonly [any, SchemaEntry<any, infer N>] ? N
-      : false;
-  };
-};
-
-// =============================================================================
-// table() — accepts tuple or record form, validates on parse
-// =============================================================================
-
-// Tuple form: strict — exact column count and order required.
-// getChildAt(i) returns the exact column type at that index.
-export function table<
-  const Entries extends ReadonlyArray<readonly [string, SchemaEntry]>,
-  const Options extends f.ExtractionOptions = {},
->(entries: Entries, options?: Options): {
-  parseIPC(
-    ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>,
-  ): Table<
-    TupleToFields<Entries> & Array<d.Field>,
-    Options
-  >;
-};
-
-// Record form: partial — only declared columns are validated, extra
-// columns in the table are ignored. Use getChild("name") for typed
-// column access. getChildAt(i) is UNSAFE here: the index may refer to
-// a column that wasn't declared or validated, but the type system will
-// still claim it's one of the declared types.
-export function table<
-  const Entries extends Record<string, SchemaEntry>,
-  const Options extends f.ExtractionOptions = {},
->(entries: Entries, options?: Options): {
-  parseIPC(
-    ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>,
-  ): Table<RecordToFields<Entries>, Options>;
-};
-
-export function table(
-  entries:
-    | ReadonlyArray<readonly [string, SchemaEntry]>
-    | Record<string, SchemaEntry>,
-  options: f.ExtractionOptions = {},
-) {
-  // Tuple form is strict (exact columns), record form is partial
-  const strict = Array.isArray(entries);
-  let record: Record<string, SchemaEntry>;
-  if (strict) {
-    record = {};
-    for (const [name, entry] of entries) {
-      record[name] = entry;
-    }
-  } else {
-    record = entries as Record<string, SchemaEntry>;
-  }
-
-  return {
-    parseIPC(ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>) {
-      const table = f.tableFromIPC(ipc, options);
-      assertSchema(record, table.schema, strict);
-      return table as any;
-    },
-  };
-}
-
-export type infer<T> = T extends {
-  parseIPC: (
-    ipc: ArrayBuffer | Uint8Array | Array<Uint8Array>,
-  ) => infer U;
-} ? U
-  : never;

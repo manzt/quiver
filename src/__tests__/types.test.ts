@@ -22,7 +22,7 @@ import { expect, test } from "vitest";
 import { expectType } from "tintype";
 
 import * as f from "@uwdata/flechette";
-import * as q from "../mod.ts";
+import * as q from "../flechette/mod.ts";
 
 function ipc(data: unknown[], type: f.DataType): Uint8Array {
   const t = f.tableFromArrays([["a", data]], { types: { a: type } });
@@ -709,7 +709,7 @@ test("nullable utf8", () => {
 // =============================================================================
 
 test("either([int32, float64])", () => {
-  const s = q.table({ a: q.either([q.int32(), q.float64()]) });
+  const s = q.table({ a: q.oneOf([q.int32(), q.float64()]) });
   {
     const t = s.parseIPC(ipc([1], f.int32()));
     const col = t.getChild("a");
@@ -1536,11 +1536,11 @@ test("nullable dictionary(utf8)", () => {
 });
 
 // =============================================================================
-// JS-type builders — q.js("type")
+// JS-type builders — q.like("type")
 // =============================================================================
 
 test('js("number")', () => {
-  const t = q.table({ a: q.js("number") }).parseIPC(ipc([1], f.int32()));
+  const t = q.table({ a: q.like("number") }).parseIPC(ipc([1], f.int32()));
   const col = t.getChild("a");
   expectType(col).toMatchInlineSnapshot(
     `q.Column<IntType<f.IntBitWidth, boolean> | FloatType<f.Precision_>, {}, false>`,
@@ -1556,7 +1556,7 @@ test('js("number")', () => {
 });
 
 test('js("number") with float64', () => {
-  const t = q.table({ a: q.js("number") }).parseIPC(ipc([1.5], f.float64()));
+  const t = q.table({ a: q.like("number") }).parseIPC(ipc([1.5], f.float64()));
   const col = t.getChild("a");
   expectType(col).toMatchInlineSnapshot(
     `q.Column<IntType<f.IntBitWidth, boolean> | FloatType<f.Precision_>, {}, false>`,
@@ -1572,7 +1572,7 @@ test('js("number") with float64', () => {
 });
 
 test('js("bigint")', () => {
-  const t = q.table({ a: q.js("bigint") }, { useBigInt: true }).parseIPC(
+  const t = q.table({ a: q.like("bigint") }, { useBigInt: true }).parseIPC(
     ipc([1n], f.int64()),
   );
   const col = t.getChild("a");
@@ -1590,7 +1590,7 @@ test('js("bigint")', () => {
 });
 
 test('js("string")', () => {
-  const t = q.table({ a: q.js("string") }).parseIPC(ipc(["hi"], f.utf8()));
+  const t = q.table({ a: q.like("string") }).parseIPC(ipc(["hi"], f.utf8()));
   const col = t.getChild("a");
   expectType(col).toMatchInlineSnapshot(
     `q.Column<f.Utf8Type | f.LargeUtf8Type | f.Utf8ViewType, {}, false>`,
@@ -1604,7 +1604,7 @@ test('js("string")', () => {
 });
 
 test('js("boolean")', () => {
-  const t = q.table({ a: q.js("boolean") }).parseIPC(ipc([true], f.bool()));
+  const t = q.table({ a: q.like("boolean") }).parseIPC(ipc([true], f.bool()));
   const col = t.getChild("a");
   expectType(col).toMatchInlineSnapshot(`q.Column<f.BoolType, {}, false>`);
   const arr = col.toArray();
@@ -1616,7 +1616,7 @@ test('js("boolean")', () => {
 });
 
 test('js("bytes")', () => {
-  const t = q.table({ a: q.js("bytes") }).parseIPC(
+  const t = q.table({ a: q.like("bytes") }).parseIPC(
     ipc([new Uint8Array([1, 2])], f.binary()),
   );
   const col = t.getChild("a");
@@ -1632,7 +1632,7 @@ test('js("bytes")', () => {
 });
 
 test('js("date")', () => {
-  const t = q.table({ a: q.js("date") }, { useDate: true }).parseIPC(
+  const t = q.table({ a: q.like("date") }, { useDate: true }).parseIPC(
     ipc([new Date("2024-01-01")], f.dateDay()),
   );
   const col = t.getChild("a");
