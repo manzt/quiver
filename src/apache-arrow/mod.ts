@@ -29,7 +29,8 @@ import { assertSchema } from "../assert.ts";
 export type { SchemaEntry } from "../mod.ts";
 export {
   binary,
-  binaryView,
+  // TODO: export when apache-arrow JS supports these types
+  // binaryView,
   bool,
   date,
   dateDay,
@@ -59,12 +60,12 @@ export {
   // JS-type builders
   js,
   largeBinary,
-  largeList,
-  largeListView,
+  // largeList,
+  // largeListView,
   largeUtf8,
   // Nested builders
   list,
-  listView,
+  // listView,
   map,
   nullType,
   // Error types
@@ -83,7 +84,7 @@ export {
   uint64,
   uint8,
   utf8,
-  utf8View,
+  // utf8View,
 } from "../mod.ts";
 export type { QuiverIssue, QuiverIssueCode } from "../mod.ts";
 
@@ -209,7 +210,7 @@ function normalizeType(
     case 18: // Duration
       result.unit = t.unit;
       break;
-    case -1: { // Dictionary
+    case -1: { // Dictionary — stays at -1 (not in IPC spec; matches the matcher convention)
       const dict = t as unknown as arrow.Dictionary;
       result.dictionary = normalizeType(dict.dictionary);
       result.id = dict.id;
@@ -270,11 +271,13 @@ type ToArrow<T extends d.DataType> = T extends d.DictionaryType<infer V>
   : T extends d.FloatType ? arrow.Float
   : T extends d.Utf8Type ? arrow.Utf8
   : T extends d.LargeUtf8Type ? arrow.LargeUtf8
-  : T extends d.Utf8ViewType ? arrow.Utf8
+  // apache-arrow JS has no Utf8View
+  : T extends d.Utf8ViewType ? never
   : T extends d.BoolType ? arrow.Bool
   : T extends d.BinaryType ? arrow.Binary
   : T extends d.LargeBinaryType ? arrow.LargeBinary
-  : T extends d.BinaryViewType ? arrow.Binary
+  // apache-arrow JS has no BinaryView
+  : T extends d.BinaryViewType ? never
   : T extends d.FixedSizeBinaryType ? arrow.FixedSizeBinary
   : T extends d.DateType<0> ? arrow.DateDay
   : T extends d.DateType<1> ? arrow.DateMillisecond
@@ -289,10 +292,10 @@ type ToArrow<T extends d.DataType> = T extends d.DictionaryType<infer V>
   : T extends d.DurationType ? arrow.Duration
   : T extends d.DecimalType ? arrow.Decimal
   : T extends d.ListType<infer Child> ? arrow.List<ToArrow<Child["type"]>>
-  : T extends d.LargeListType<infer Child> ? arrow.List<ToArrow<Child["type"]>>
-  : T extends d.ListViewType<infer Child> ? arrow.List<ToArrow<Child["type"]>>
-  : T extends d.LargeListViewType<infer Child>
-    ? arrow.List<ToArrow<Child["type"]>>
+  // apache-arrow JS has no LargeList/ListView/LargeListView
+  : T extends d.LargeListType ? never
+  : T extends d.ListViewType ? never
+  : T extends d.LargeListViewType ? never
   : T extends d.FixedSizeListType<infer Children>
     ? arrow.FixedSizeList<ToArrow<Children[0]["type"]>>
   : T extends d.StructType<infer Children>

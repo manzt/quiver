@@ -221,39 +221,45 @@ export function fixedSizeBinary(
 // JS-type builders — match by JS scalar type
 // =============================================================================
 
-export const js: {
-  number(): SchemaEntry<d.IntType | d.FloatType>;
-  bigint(): SchemaEntry<d.IntType<64>>;
-  string(): SchemaEntry<d.Utf8Type | d.LargeUtf8Type | d.Utf8ViewType>;
-  boolean(): SchemaEntry<d.BoolType>;
-  bytes(): SchemaEntry<
-    d.BinaryType | d.LargeBinaryType | d.BinaryViewType | d.FixedSizeBinaryType
-  >;
-  date(): SchemaEntry<d.DateType | d.TimestampType>;
-} = {
-  /** Matches any Int or Float column. Scalar: `number`. */
-  number: () => schema({ typeId: [2, 3] }),
-  /**
-   * Matches any 64-bit Int column (int64, uint64). Scalar: `bigint`.
-   *
-   * Requires `{ useBigInt: true }` in table options — without it values
-   * are returned as `number` and may lose precision beyond 2^53.
-   */
-  bigint: () => schema({ typeId: 2, bitWidth: 64 }),
-  /** Matches any string column (Utf8, LargeUtf8, Utf8View). Scalar: `string`. */
-  string: () => schema({ typeId: [5, 20, 24] }),
-  /** Matches a Bool column. Scalar: `boolean`. */
-  boolean: () => schema({ typeId: 6 }),
-  /** Matches any binary column (Binary, LargeBinary, BinaryView, FixedSizeBinary). Scalar: `Uint8Array`. */
-  bytes: () => schema({ typeId: [4, 19, 23, 15] }),
-  /**
-   * Matches any date-like column (Date, Timestamp). Scalar: `Date`.
-   *
-   * Requires `{ useDate: true }` in table options — without it values
-   * are returned as `number` (epoch milliseconds).
-   */
-  date: () => schema({ typeId: [8, 10] }),
-};
+/** Match columns by their JS scalar type. */
+export function js(
+  type: "number",
+): SchemaEntry<d.IntType | d.FloatType>;
+export function js(
+  type: "bigint",
+): SchemaEntry<d.IntType<64>>;
+export function js(
+  type: "string",
+): SchemaEntry<d.Utf8Type | d.LargeUtf8Type | d.Utf8ViewType>;
+export function js(
+  type: "boolean",
+): SchemaEntry<d.BoolType>;
+export function js(
+  type: "bytes",
+): SchemaEntry<
+  d.BinaryType | d.LargeBinaryType | d.BinaryViewType | d.FixedSizeBinaryType
+>;
+export function js(
+  type: "date",
+): SchemaEntry<d.DateType | d.TimestampType>;
+export function js(
+  type: "number" | "bigint" | "string" | "boolean" | "bytes" | "date",
+): SchemaEntry {
+  switch (type) {
+    case "number":
+      return schema({ typeId: [2, 3] });
+    case "bigint":
+      return schema({ typeId: 2, bitWidth: 64 });
+    case "string":
+      return schema({ typeId: [5, 20, 24] });
+    case "boolean":
+      return schema({ typeId: 6 });
+    case "bytes":
+      return schema({ typeId: [4, 19, 23, 15] });
+    case "date":
+      return schema({ typeId: [8, 10] });
+  }
+}
 
 // =============================================================================
 // Broad builders — match any variant of a type family

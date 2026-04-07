@@ -69,12 +69,12 @@ that matches your trust in the producer:
 
 ```ts
 // JS-level — "I care about the JS type I get back"
-q.js.number()   // → number
-q.js.bigint()   // → bigint  (requires useBigInt)
-q.js.string()   // → string
-q.js.boolean()  // → boolean
-q.js.bytes()    // → Uint8Array
-q.js.date()     // → Date    (requires useDate)
+q.js("number")   // → number
+q.js("bigint")   // → bigint  (requires useBigInt)
+q.js("string")   // → string
+q.js("boolean")  // → boolean
+q.js("bytes")    // → Uint8Array
+q.js("date")     // → Date    (requires useDate)
 
 // Arrow-level — "I care about the Arrow type family"
 q.int()          q.float()        q.date()
@@ -108,7 +108,7 @@ Builders narrow both the scalar type (`.at(i)`) and the array type
 (`.toArray()`). Stricter builders give tighter types:
 
 ```ts
-let loose = q.table({ value: q.js.number() });
+let loose = q.table({ value: q.js("number") });
 let table = loose.parseIPC(bytes);
 let col = table.getChild("value");
 
