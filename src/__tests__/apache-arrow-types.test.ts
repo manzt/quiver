@@ -690,6 +690,18 @@ test('js("date")', () => {
 });
 
 // =============================================================================
+// infer utility type
+// =============================================================================
+
+test("infer resolves table type", () => {
+  const s = q.table({ a: q.int32(), b: q.utf8() });
+  type T = q.infer<typeof s>;
+  expectType({} as T).toMatchInlineSnapshot(
+    `arrow.Table<{ a: arrow.Int32; b: arrow.Utf8; }>`,
+  );
+});
+
+// =============================================================================
 // Types unsupported by apache-arrow JS — map to never, parseIPC throws
 // =============================================================================
 

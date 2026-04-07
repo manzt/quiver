@@ -1022,6 +1022,18 @@ test("interval + useDate", () => {
 });
 
 // =============================================================================
+// infer utility type
+// =============================================================================
+
+test("infer resolves table type", () => {
+  const s = q.table({ a: q.int32(), b: q.utf8() });
+  type T = q.infer<typeof s>;
+  expectType({} as T).toMatchInlineSnapshot(
+    `q.Table<RecordToFields<{ readonly a: q.SchemaEntry<IntType<32, true>, false>; readonly b: q.SchemaEntry<f.Utf8Type, false>; }>, {}>`,
+  );
+});
+
+// =============================================================================
 // View / large types — parsed from pyarrow-generated fixture
 // (flechette cannot build these via tableFromArrays)
 // =============================================================================
