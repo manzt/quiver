@@ -15,6 +15,8 @@
 
 import { expect, test } from "vitest";
 import { expectType } from "tintype";
+import * as NodeFs from "node:fs";
+import * as NodePath from "node:path";
 
 import * as f from "@uwdata/flechette";
 import * as arrow from "apache-arrow";
@@ -685,4 +687,51 @@ test('js("date")', () => {
   const val = vec.get(0);
   expectType(val).toMatchInlineSnapshot(`number | null`);
   expect(typeof val).toBe("number");
+});
+
+// =============================================================================
+// Types unsupported by apache-arrow JS — map to never, parseIPC throws
+// =============================================================================
+
+const unsupportedFixture = NodeFs.readFileSync(
+  NodePath.resolve(
+    import.meta.dirname!,
+    "../../fixtures/unsupported_types.arrow",
+  ),
+);
+
+test("largeList maps to never and parseIPC throws", () => {
+  const s = q.table({ large_list: q.largeList(q.int32()) });
+  expect(() => {
+    const t = s.parseIPC(unsupportedFixture);
+    const col: arrow.Vector<never> = t.getChild("large_list")!;
+    void col;
+  }).toThrow();
+});
+
+test("listView maps to never and parseIPC throws", () => {
+  const s = q.table({ list_view: q.listView(q.int32()) });
+  expect(() => {
+    const t = s.parseIPC(unsupportedFixture);
+    const col: arrow.Vector<never> = t.getChild("list_view")!;
+    void col;
+  }).toThrow();
+});
+
+test("largeListView maps to never and parseIPC throws", () => {
+  const s = q.table({ large_list_view: q.largeListView(q.int32()) });
+  expect(() => {
+    const t = s.parseIPC(unsupportedFixture);
+    const col: arrow.Vector<never> = t.getChild("large_list_view")!;
+    void col;
+  }).toThrow();
+});
+
+test("binaryView maps to never and parseIPC throws", () => {
+  const s = q.table({ binary_view: q.binaryView() });
+  expect(() => {
+    const t = s.parseIPC(unsupportedFixture);
+    const col: arrow.Vector<never> = t.getChild("binary_view")!;
+    void col;
+  }).toThrow();
 });

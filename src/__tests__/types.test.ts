@@ -20,6 +20,8 @@
 
 import { expect, test } from "vitest";
 import { expectType } from "tintype";
+import * as NodeFs from "node:fs";
+import * as NodePath from "node:path";
 
 import * as f from "@uwdata/flechette";
 import * as q from "../flechette/mod.ts";
@@ -29,15 +31,6 @@ function ipc(data: unknown[], type: f.DataType): Uint8Array {
   const bytes = f.tableToIPC(t, { format: "stream" });
   if (!bytes) throw new Error("tableToIPC returned null");
   return bytes;
-}
-
-/** Type-only mock for schemas that can't round-trip through IPC. */
-function tableMock<T>(_schema: { parseIPC: (...args: any[]) => T }): T {
-  const proxy: unknown = new Proxy(() => proxy, {
-    get: () => proxy,
-    apply: () => proxy,
-  });
-  return proxy as T;
 }
 
 // =============================================================================
@@ -1029,25 +1022,33 @@ test("interval + useDate", () => {
 });
 
 // =============================================================================
-// Missing string/binary variants
+// View / large types — parsed from pyarrow-generated fixture
+// (flechette cannot build these via tableFromArrays)
 // =============================================================================
 
-// flechette cannot build View types via tableFromArrays, so these
-// test type inference only (no IPC round-trip).
+const unsupportedFixture = NodeFs.readFileSync(
+  NodePath.resolve(
+    import.meta.dirname!,
+    "../../fixtures/unsupported_types.arrow",
+  ),
+);
 
 test("utf8View", () => {
-  const t = tableMock(q.table({ a: q.utf8View() }));
-  const col = t.getChild("a");
+  const t = q.table({ utf8_view: q.utf8View() }).parseIPC(unsupportedFixture);
+  const col = t.getChild("utf8_view");
   expectType(col).toMatchInlineSnapshot(`q.Column<f.Utf8ViewType, {}, false>`);
   const arr = col.toArray();
   expectType(arr).toMatchInlineSnapshot(`string[]`);
   const val = col.at(0);
   expectType(val).toMatchInlineSnapshot(`string`);
+  expect(typeof val).toBe("string");
 });
 
 test("binaryView", () => {
-  const t = tableMock(q.table({ a: q.binaryView() }));
-  const col = t.getChild("a");
+  const t = q.table({ binary_view: q.binaryView() }).parseIPC(
+    unsupportedFixture,
+  );
+  const col = t.getChild("binary_view");
   expectType(col).toMatchInlineSnapshot(
     `q.Column<f.BinaryViewType, {}, false>`,
   );
@@ -1055,6 +1056,7 @@ test("binaryView", () => {
   expectType(arr).toMatchInlineSnapshot(`Uint8Array<ArrayBufferLike>[]`);
   const val = col.at(0);
   expectType(val).toMatchInlineSnapshot(`Uint8Array<ArrayBufferLike>`);
+  expect(val).toBeInstanceOf(Uint8Array);
 });
 
 test("largeBinary", () => {
@@ -1310,9 +1312,10 @@ test("largeList(int32)", () => {
 });
 
 test("listView(int32)", () => {
-  // flechette cannot build View types via tableFromArrays
-  const t = tableMock(q.table({ a: q.listView(q.int32()) }));
-  const col = t.getChild("a");
+  const t = q.table({ list_view: q.listView(q.int32()) }).parseIPC(
+    unsupportedFixture,
+  );
+  const col = t.getChild("list_view");
   expectType(col).toMatchInlineSnapshot(
     `q.Column<ListViewType<q.Field<string, IntType<32, true>>>, {}, false>`,
   );
@@ -1320,12 +1323,15 @@ test("listView(int32)", () => {
   expectType(arr).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>[]`);
   const val = col.at(0);
   expectType(val).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>`);
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Int32Array);
 });
 
 test("largeListView(int32)", () => {
-  // flechette cannot build View types via tableFromArrays
-  const t = tableMock(q.table({ a: q.largeListView(q.int32()) }));
-  const col = t.getChild("a");
+  const t = q.table({ large_list_view: q.largeListView(q.int32()) }).parseIPC(
+    unsupportedFixture,
+  );
+  const col = t.getChild("large_list_view");
   expectType(col).toMatchInlineSnapshot(
     `q.Column<LargeListViewType<q.Field<string, IntType<32, true>>>, {}, false>`,
   );
@@ -1333,6 +1339,8 @@ test("largeListView(int32)", () => {
   expectType(arr).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>[]`);
   const val = col.at(0);
   expectType(val).toMatchInlineSnapshot(`Int32Array<ArrayBufferLike>`);
+  expect(arr).toBeInstanceOf(Array);
+  expect(val).toBeInstanceOf(Int32Array);
 });
 
 test("list(list(int32))", () => {
