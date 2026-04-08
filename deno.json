@@ -26,7 +26,7 @@
     "@uwdata/flechette": "npm:@uwdata/flechette@^2.3.0",
     "apache-arrow": "npm:apache-arrow@^21.1.0",
     "magic-string": "npm:magic-string@^0.30.21",
-    "tintype": "npm:tintype@^0.0.1",
+    "tintype": "npm:tintype@^0.1.1",
     "typescript": "npm:typescript@^6.0.2",
     "vitest": "npm:vitest@^4.1.2"
   }

@@ -41,7 +41,7 @@ test("int8", () => {
   const t = q.table({ a: q.int8() }).parse(
     makeTable([["a", [1]]], { a: f.int8() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int8; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int8 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Int8>`);
   const arr = vec.toArray();
@@ -56,7 +56,7 @@ test("int16", () => {
   const t = q.table({ a: q.int16() }).parse(
     makeTable([["a", [1]]], { a: f.int16() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int16; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int16 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Int16>`);
   const arr = vec.toArray();
@@ -71,7 +71,7 @@ test("int32", () => {
   const t = q.table({ a: q.int32() }).parse(
     makeTable([["a", [1]]], { a: f.int32() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int32; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int32 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Int32>`);
   const arr = vec.toArray();
@@ -86,7 +86,7 @@ test("int64", () => {
   const t = q.table({ a: q.int64() }).parse(
     makeTable([["a", [1n]]], { a: f.int64() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int64; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int64 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Int64>`);
   const arr = vec.toArray();
@@ -105,7 +105,7 @@ test("uint8", () => {
   const t = q.table({ a: q.uint8() }).parse(
     makeTable([["a", [1]]], { a: f.uint8() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint8; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint8 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Uint8>`);
   const arr = vec.toArray();
@@ -120,7 +120,7 @@ test("uint16", () => {
   const t = q.table({ a: q.uint16() }).parse(
     makeTable([["a", [1]]], { a: f.uint16() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint16; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint16 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Uint16>`);
   const arr = vec.toArray();
@@ -135,7 +135,7 @@ test("uint32", () => {
   const t = q.table({ a: q.uint32() }).parse(
     makeTable([["a", [1]]], { a: f.uint32() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint32; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint32 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Uint32>`);
   const arr = vec.toArray();
@@ -150,7 +150,7 @@ test("uint64", () => {
   const t = q.table({ a: q.uint64() }).parse(
     makeTable([["a", [1n]]], { a: f.uint64() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint64; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Uint64 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Uint64>`);
   const arr = vec.toArray();
@@ -169,7 +169,7 @@ test("float16", () => {
   const t = q.table({ a: q.float16() }).parse(
     makeTable([["a", [1.5]]], { a: f.float16() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Float16; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Float16 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Float16>`);
   const arr = vec.toArray();
@@ -184,7 +184,7 @@ test("float32", () => {
   const t = q.table({ a: q.float32() }).parse(
     makeTable([["a", [1.5]]], { a: f.float32() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Float32; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Float32 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Float32>`);
   const arr = vec.toArray();
@@ -199,7 +199,7 @@ test("float64", () => {
   const t = q.table({ a: q.float64() }).parse(
     makeTable([["a", [1.5]]], { a: f.float64() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Float64; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Float64 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Float64>`);
   const arr = vec.toArray();
@@ -218,7 +218,7 @@ test("utf8", () => {
   const t = q.table({ a: q.utf8() }).parse(
     makeTable([["a", ["hi"]]], { a: f.utf8() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Utf8; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Utf8 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Utf8>`);
   const val = vec.get(0);
@@ -230,7 +230,7 @@ test("largeUtf8", () => {
   const t = q.table({ a: q.largeUtf8() }).parse(
     makeTable([["a", ["hi"]]], { a: f.largeUtf8() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.LargeUtf8; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.LargeUtf8 }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.LargeUtf8>`);
   const val = vec.get(0);
@@ -246,7 +246,7 @@ test("bool", () => {
   const t = q.table({ a: q.bool() }).parse(
     makeTable([["a", [true]]], { a: f.bool() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Bool; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Bool }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Bool>`);
   const val = vec.get(0);
@@ -262,7 +262,7 @@ test("binary", () => {
   const t = q.table({ a: q.binary() }).parse(
     makeTable([["a", [new Uint8Array([1, 2])]]], { a: f.binary() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Binary; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Binary }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Binary>`);
   const val = vec.get(0);
@@ -277,7 +277,7 @@ test("fixedSizeBinary", () => {
     }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.FixedSizeBinary; }>`,
+    `arrow.Table<{ a: arrow.FixedSizeBinary }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.FixedSizeBinary>`);
@@ -294,7 +294,7 @@ test("dateDay", () => {
   const t = q.table({ a: q.dateDay() }).parse(
     makeTable([["a", [new Date("2024-01-01")]]], { a: f.dateDay() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.DateDay; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.DateDay }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.DateDay>`);
   const val = vec.get(0);
@@ -307,7 +307,7 @@ test("dateMillisecond", () => {
     makeTable([["a", [new Date("2024-01-01")]]], { a: f.dateMillisecond() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.DateMillisecond; }>`,
+    `arrow.Table<{ a: arrow.DateMillisecond }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.DateMillisecond>`);
@@ -324,7 +324,7 @@ test("timeSecond", () => {
   const t = q.table({ a: q.timeSecond() }).parse(
     makeTable([["a", [3600]]], { a: f.timeSecond() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Time<Times>; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Time<Times> }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Time<Times>>`);
   const val = vec.get(0);
@@ -336,7 +336,7 @@ test("timeMicrosecond", () => {
   const t = q.table({ a: q.timeMicrosecond() }).parse(
     makeTable([["a", [3600000000n]]], { a: f.timeMicrosecond() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Time<Times>; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Time<Times> }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Time<Times>>`);
   const val = vec.get(0);
@@ -353,7 +353,7 @@ test("timestamp", () => {
     makeTable([["a", [1000000]]], { a: f.timestamp() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Timestamp<Timestamps>; }>`,
+    `arrow.Table<{ a: arrow.Timestamp<Timestamps> }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
@@ -373,7 +373,7 @@ test("duration", () => {
     makeTable([["a", [1000n]]], { a: f.duration() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Duration<Durations>; }>`,
+    `arrow.Table<{ a: arrow.Duration<Durations> }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
@@ -392,7 +392,7 @@ test("decimal128", () => {
   const t = q.table({ a: q.decimal128(10, 2) }).parse(
     makeTable([["a", [1.5]]], { a: f.decimal(10, 2, 128) }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Decimal; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Decimal }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Decimal>`);
   const val = vec.get(0);
@@ -409,7 +409,7 @@ test("dictionary(utf8)", () => {
     makeTable([["a", ["a", "b", "a"]]], { a: f.dictionary(f.utf8()) }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Dictionary<arrow.Utf8, TKeys>; }>`,
+    `arrow.Table<{ a: arrow.Dictionary<arrow.Utf8, TKeys> }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
@@ -429,7 +429,7 @@ test("list(int32)", () => {
     makeTable([["a", [[1, 2]]]], { a: f.list(f.int32()) }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.List<arrow.Int32>; }>`,
+    `arrow.Table<{ a: arrow.List<arrow.Int32> }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
@@ -445,7 +445,7 @@ test("list(utf8)", () => {
     makeTable([["a", [["a", "b"]]]], { a: f.list(f.utf8()) }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.List<arrow.Utf8>; }>`,
+    `arrow.Table<{ a: arrow.List<arrow.Utf8> }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.List<arrow.Utf8>>`);
@@ -466,15 +466,40 @@ test("struct", () => {
     ),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Struct<StructTypeMap<(q.Field<"x", IntType<32, true>> | q.Field<"y", f.Utf8Type>)[]>>; }>`,
+    `
+    arrow.Table<
+      {
+        a: arrow.Struct<
+          StructTypeMap<
+            (q.Field<"x", IntType<32, true>> | q.Field<"y", f.Utf8Type>)[]
+          >
+        >;
+      }
+    >
+  `,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
-    `arrow.Vector<arrow.Struct<StructTypeMap<(q.Field<"x", IntType<32, true>> | q.Field<"y", f.Utf8Type>)[]>>>`,
+    `
+    arrow.Vector<
+      arrow.Struct<
+        StructTypeMap<
+          (q.Field<"x", IntType<32, true>> | q.Field<"y", f.Utf8Type>)[]
+        >
+      >
+    >
+  `,
   );
   const val = vec.get(0);
   expectType(val).toMatchInlineSnapshot(
-    `arrow.StructRowProxy<StructTypeMap<(q.Field<"x", IntType<32, true>> | q.Field<"y", f.Utf8Type>)[]>> | null`,
+    `
+    | arrow.StructRowProxy<
+        StructTypeMap<
+          (q.Field<"x", IntType<32, true>> | q.Field<"y", f.Utf8Type>)[]
+        >
+      >
+      | null
+  `,
   );
   expect(val?.x).toBe(1);
   expect(val?.y).toBe("hi");
@@ -492,7 +517,7 @@ test("map(utf8, int32)", () => {
     ),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Map_<arrow.Utf8, arrow.Int32>; }>`,
+    `arrow.Table<{ a: arrow.Map_<arrow.Utf8, arrow.Int32> }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
@@ -514,7 +539,7 @@ test("oneOf([int32, float64])", () => {
     makeTable([["a", [1]]], { a: f.int32() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Int32 | arrow.Float64; }>`,
+    `arrow.Table<{ a: arrow.Int32 | arrow.Float64 }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
@@ -533,7 +558,7 @@ test("broad int()", () => {
   const t = q.table({ a: q.int() }).parse(
     makeTable([["a", [1]]], { a: f.int32() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int<Ints>; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int<Ints> }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Int<Ints>>`);
   const val = vec.get(0);
@@ -546,7 +571,7 @@ test("broad float()", () => {
     makeTable([["a", [1.5]]], { a: f.float64() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Float<Floats>; }>`,
+    `arrow.Table<{ a: arrow.Float<Floats> }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Float<Floats>>`);
@@ -560,7 +585,7 @@ test("broad string()", () => {
     makeTable([["a", ["hi"]]], { a: f.utf8() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Utf8 | arrow.LargeUtf8; }>`,
+    `arrow.Table<{ a: arrow.Utf8 | arrow.LargeUtf8 }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
@@ -576,7 +601,7 @@ test("broad date()", () => {
     makeTable([["a", [new Date()]]], { a: f.dateDay() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Date_<Dates>; }>`,
+    `arrow.Table<{ a: arrow.Date_<Dates> }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Date_<Dates>>`);
@@ -589,7 +614,7 @@ test("broad time()", () => {
   const t = q.table({ a: q.time() }).parse(
     makeTable([["a", [3600]]], { a: f.timeSecond() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Time<Times>; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Time<Times> }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Time<Times>>`);
   const val = vec.get(0);
@@ -606,7 +631,11 @@ test('js("number")', () => {
     makeTable([["a", [1]]], { a: f.int32() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Int<Ints> | arrow.Float<Floats>; }>`,
+    `
+    arrow.Table<
+      { a: arrow.Int<Ints> | arrow.Float<Floats> }
+    >
+  `,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
@@ -621,7 +650,7 @@ test('js("bigint")', () => {
   const t = q.table({ a: q.like("bigint") }).parse(
     makeTable([["a", [1n]]], { a: f.int64() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int<Ints>; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Int<Ints> }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Int<Ints>>`);
   const val = vec.get(0);
@@ -634,7 +663,7 @@ test('js("string")', () => {
     makeTable([["a", ["hi"]]], { a: f.utf8() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Utf8 | arrow.LargeUtf8; }>`,
+    `arrow.Table<{ a: arrow.Utf8 | arrow.LargeUtf8 }>`,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
@@ -649,7 +678,7 @@ test('js("boolean")', () => {
   const t = q.table({ a: q.like("boolean") }).parse(
     makeTable([["a", [true]]], { a: f.bool() }),
   );
-  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Bool; }>`);
+  expectType(t).toMatchInlineSnapshot(`arrow.Table<{ a: arrow.Bool }>`);
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(`arrow.Vector<arrow.Bool>`);
   const val = vec.get(0);
@@ -662,11 +691,19 @@ test('js("bytes")', () => {
     makeTable([["a", [new Uint8Array([1, 2])]]], { a: f.binary() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Binary | arrow.FixedSizeBinary | arrow.LargeBinary; }>`,
+    `
+    arrow.Table<
+      { a: arrow.Binary | arrow.FixedSizeBinary | arrow.LargeBinary }
+    >
+  `,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
-    `arrow.Vector<arrow.Binary | arrow.FixedSizeBinary | arrow.LargeBinary>`,
+    `
+    arrow.Vector<
+      arrow.Binary | arrow.FixedSizeBinary | arrow.LargeBinary
+    >
+  `,
   );
   const val = vec.get(0);
   expectType(val).toMatchInlineSnapshot(`Uint8Array<ArrayBufferLike> | null`);
@@ -678,11 +715,19 @@ test('js("date")', () => {
     makeTable([["a", [new Date("2024-01-01")]]], { a: f.dateDay() }),
   );
   expectType(t).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Timestamp<Timestamps> | arrow.Date_<Dates>; }>`,
+    `
+    arrow.Table<
+      { a: arrow.Timestamp<Timestamps> | arrow.Date_<Dates> }
+    >
+  `,
   );
   const vec = t.getChild("a")!;
   expectType(vec).toMatchInlineSnapshot(
-    `arrow.Vector<arrow.Timestamp<Timestamps> | arrow.Date_<Dates>>`,
+    `
+    arrow.Vector<
+      arrow.Timestamp<Timestamps> | arrow.Date_<Dates>
+    >
+  `,
   );
   const val = vec.get(0);
   expectType(val).toMatchInlineSnapshot(`number | null`);
@@ -697,7 +742,7 @@ test("infer resolves table type", () => {
   const s = q.table({ a: q.int32(), b: q.utf8() });
   type T = q.infer<typeof s>;
   expectType({} as T).toMatchInlineSnapshot(
-    `arrow.Table<{ a: arrow.Int32; b: arrow.Utf8; }>`,
+    `arrow.Table<{ a: arrow.Int32; b: arrow.Utf8 }>`,
   );
 });
 
