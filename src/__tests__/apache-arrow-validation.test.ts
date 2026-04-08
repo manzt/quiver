@@ -355,7 +355,7 @@ test('q.like("date") rejects int32 column', () => {
 });
 
 // =============================================================================
-// 6. either — accept any of these
+// 6. oneOf — accept any of these
 // =============================================================================
 
 test("oneOf([int32(), float64()]) accepts int32 column", () => {

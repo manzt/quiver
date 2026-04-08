@@ -203,7 +203,7 @@ function collectTypeIssues(
   path: string[],
   issues: QuiverIssue[],
 ): void {
-  // either() — try each option
+  // oneOf() — try each option
   if ((match as Record<string, unknown>).options) {
     const options = (match as Record<string, unknown>)
       .options as MatchEntry[];
@@ -323,7 +323,7 @@ function collectTypeIssues(
   }
 }
 
-/** Simple boolean check (used by either() internally). */
+/** Simple boolean check (used by oneOf() internally). */
 function matchesType(
   match: TypeMatcher,
   actual: DataTypeLike,
